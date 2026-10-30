@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Users,
@@ -21,10 +21,23 @@ import {
   Edit2,
   Trash2,
   Check,
-  ChevronRight
+  ChevronRight,
+  Shield,
+  UserPlus,
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 import { useSchoolStore } from '../../lib/store';
 import { HouseColor, ClassLevel, ClassArm, BusRoute, Subject, FeeInvoice } from '../../lib/types';
+
+interface ClerkUserSummary {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  imageUrl: string;
+  createdAt: number;
+}
 
 export default function AdminView() {
   const {
@@ -49,6 +62,97 @@ export default function AdminView() {
   // Admissions State
   const [selectedHouse, setSelectedHouse] = useState<{ [studentId: string]: HouseColor }>({});
   const [approvalSuccess, setApprovalSuccess] = useState<string | null>(null);
+
+  // Clerk User Accounts & Role Assignment
+  const [clerkUsers, setClerkUsers] = useState<ClerkUserSummary[]>([]);
+  const [loadingClerkUsers, setLoadingClerkUsers] = useState(false);
+  const [selectedUserToAssign, setSelectedUserToAssign] = useState<ClerkUserSummary | null>(null);
+  const [assignRoleChoice, setAssignRoleChoice] = useState<'teacher' | 'admin' | 'student' | 'parent'>('teacher');
+  const [assignStaffNo, setAssignStaffNo] = useState('');
+  const [assignClassLevel, setAssignClassLevel] = useState<ClassLevel>('SSS 2');
+  const [assignClassArm, setAssignClassArm] = useState<ClassArm>('Emerald');
+  const [assignSubjects, setAssignSubjects] = useState('Mathematics, Further Mathematics');
+  const [assignQualification, setAssignQualification] = useState('B.Sc (Ed) / Cambridge Certified');
+  const [assignPhone, setAssignPhone] = useState('+234 803 000 0000');
+  const [isSubmittingRole, setIsSubmittingRole] = useState(false);
+  const [roleMessage, setRoleMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const fetchClerkUsers = async () => {
+    setLoadingClerkUsers(true);
+    try {
+      const res = await fetch('/api/admin/users');
+      if (res.ok) {
+        const data = await res.json();
+        setClerkUsers(data.users || []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch clerk users', e);
+    } finally {
+      setLoadingClerkUsers(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchClerkUsers();
+  }, []);
+
+  const handleOpenAssignModal = (user: ClerkUserSummary) => {
+    setSelectedUserToAssign(user);
+    const existingRole = (['teacher', 'admin', 'student', 'parent'].includes(user.role)
+      ? user.role
+      : 'teacher') as 'teacher' | 'admin' | 'student' | 'parent';
+    setAssignRoleChoice(existingRole);
+    setAssignStaffNo(`DIS/STF/${Math.floor(100 + Math.random() * 900)}`);
+  };
+
+  const handleAssignRoleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedUserToAssign) return;
+
+    setIsSubmittingRole(true);
+    setRoleMessage(null);
+
+    try {
+      const payload = {
+        userId: selectedUserToAssign.id,
+        role: assignRoleChoice,
+        name: selectedUserToAssign.name,
+        email: selectedUserToAssign.email,
+        phone: assignPhone,
+        staffNo: assignStaffNo,
+        assignedClass: assignClassLevel,
+        assignedArm: assignClassArm,
+        subjects: assignSubjects,
+        qualification: assignQualification
+      };
+
+      const res = await fetch('/api/admin/assign-role', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update user role');
+      }
+
+      setRoleMessage({
+        type: 'success',
+        text: `Successfully assigned ${assignRoleChoice.toUpperCase()} role to ${selectedUserToAssign.name}! Clerk metadata & database synced.`
+      });
+      setSelectedUserToAssign(null);
+      await fetchClerkUsers();
+      setTimeout(() => setRoleMessage(null), 6000);
+    } catch (err: any) {
+      setRoleMessage({
+        type: 'error',
+        text: err.message || 'Failed to assign role'
+      });
+    } finally {
+      setIsSubmittingRole(false);
+    }
+  };
 
   // Teacher Assignment Modal
   const [editingTeacherId, setEditingTeacherId] = useState<string | null>(null);
@@ -572,19 +676,388 @@ export default function AdminView() {
         </div>
       )}
 
-      {/* TAB 2: Teacher Allocations */}
+      {/* TAB 2: Teacher Allocations & Clerk User Role Management */}
       {activeTab === 'teachers' && (
-        <div className="card">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-            <div>
-              <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
-                Teacher Staff Allocation &amp; Form Tutor Deployment
-              </h2>
-              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                Assign teachers to class levels and class arms. Teachers assigned as Form Tutors can claim students and take morning roll call.
-              </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Notification Banner */}
+          {roleMessage && (
+            <div
+              style={{
+                padding: '1rem 1.25rem',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: roleMessage.type === 'success' ? '#ecfdf5' : '#fef2f2',
+                border: `1px solid ${roleMessage.type === 'success' ? '#10b981' : '#ef4444'}`,
+                color: roleMessage.type === 'success' ? '#065f46' : '#991b1b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                fontSize: '0.875rem',
+                fontWeight: 600
+              }}
+            >
+              {roleMessage.type === 'success' ? <CheckCircle2 size={20} /> : <AlertCircle size={20} />}
+              <span>{roleMessage.text}</span>
             </div>
+          )}
+
+          {/* SECTION 1: Registered Accounts & Direct Role Assignment */}
+          <div className="card" style={{ border: '1px solid #cbd5e1' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <Shield size={20} color="var(--primary-navy)" />
+                  <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
+                    Registered Accounts &amp; Role Promotion (Direct Clerk Sync)
+                  </h2>
+                </div>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  All accounts registered on the portal. Assign the <strong>Teacher</strong> role with instant class deployment, or promote to <strong>Admin</strong>, <strong>Parent</strong>, or <strong>Student</strong> without touching Clerk dashboard metadata.
+                </p>
+              </div>
+
+              <button
+                onClick={fetchClerkUsers}
+                disabled={loadingClerkUsers}
+                className="btn btn-outline"
+                style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                <RefreshCw size={14} className={loadingClerkUsers ? 'spin' : ''} />
+                {loadingClerkUsers ? 'Syncing...' : 'Refresh Users'}
+              </button>
+            </div>
+
+            {loadingClerkUsers && clerkUsers.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>
+                <Loader2 size={28} className="spin" style={{ margin: '0 auto 0.5rem' }} />
+                <div>Fetching registered users from Clerk authentication directory...</div>
+              </div>
+            ) : clerkUsers.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
+                No registered user accounts found.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
+                      <th style={{ padding: '0.75rem' }}>User Profile</th>
+                      <th style={{ padding: '0.75rem' }}>Email Address</th>
+                      <th style={{ padding: '0.75rem' }}>Current Role</th>
+                      <th style={{ padding: '0.75rem' }}>Registered On</th>
+                      <th style={{ padding: '0.75rem', textAlign: 'right' }}>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {clerkUsers.map((u) => {
+                      const roleColors: Record<string, { bg: string; text: string; border: string }> = {
+                        admin: { bg: '#f5f3ff', text: '#5b21b6', border: '#ddd6fe' },
+                        teacher: { bg: '#eff6ff', text: '#1e40af', border: '#bfdbfe' },
+                        student: { bg: '#ecfdf5', text: '#065f46', border: '#a7f3d0' },
+                        parent: { bg: '#fffbeb', text: '#92400e', border: '#fde68a' }
+                      };
+                      const userRoleLower = (u.role || '').toLowerCase();
+                      const currentBadge = roleColors[userRoleLower] || { bg: '#f1f5f9', text: '#475569', border: '#e2e8f0' };
+
+                      return (
+                        <tr key={u.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                          <td style={{ padding: '0.75rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              {u.imageUrl ? (
+                                <img
+                                  src={u.imageUrl}
+                                  alt={u.name}
+                                  style={{ width: '32px', height: '32px', borderRadius: '50%', objectFit: 'cover' }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: '32px',
+                                    height: '32px',
+                                    borderRadius: '50%',
+                                    backgroundColor: 'var(--primary-navy)',
+                                    color: '#ffffff',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontWeight: 700,
+                                    fontSize: '0.8rem'
+                                  }}
+                                >
+                                  {(u.name || 'U').charAt(0).toUpperCase()}
+                                </div>
+                              )}
+                              <div>
+                                <div style={{ fontWeight: 700, color: 'var(--primary-navy)' }}>{u.name || 'Registered User'}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>ID: {u.id.slice(0, 14)}...</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td style={{ padding: '0.75rem', color: '#334155', fontWeight: 500 }}>{u.email}</td>
+                          <td style={{ padding: '0.75rem' }}>
+                            <span
+                              style={{
+                                padding: '0.25rem 0.65rem',
+                                borderRadius: '9999px',
+                                fontSize: '0.75rem',
+                                fontWeight: 700,
+                                textTransform: 'capitalize',
+                                backgroundColor: currentBadge.bg,
+                                color: currentBadge.text,
+                                border: `1px solid ${currentBadge.border}`
+                              }}
+                            >
+                              {u.role ? `${u.role}` : 'Unassigned / Guest'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.75rem', color: '#64748b', fontSize: '0.8rem' }}>
+                            {u.createdAt ? new Date(u.createdAt).toLocaleDateString('en-GB') : 'Recent'}
+                          </td>
+                          <td style={{ padding: '0.75rem', textAlign: 'right' }}>
+                            <button
+                              onClick={() => handleOpenAssignModal(u)}
+                              className="btn btn-primary"
+                              style={{ fontSize: '0.775rem', padding: '0.4rem 0.85rem' }}
+                            >
+                              <UserPlus size={14} /> Assign / Change Role
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
+
+          {/* ROLE ASSIGNMENT & DEPLOYMENT MODAL / DRAWER */}
+          {selectedUserToAssign && (
+            <div
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
+                backdropFilter: 'blur(4px)',
+                zIndex: 9999,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1.5rem'
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: '#ffffff',
+                  borderRadius: 'var(--radius-lg)',
+                  maxWidth: '560px',
+                  width: '100%',
+                  padding: '2rem',
+                  boxShadow: 'var(--shadow-xl)',
+                  border: '1px solid #e2e8f0',
+                  maxHeight: '90vh',
+                  overflowY: 'auto'
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+                  <div>
+                    <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
+                      Assign Role &amp; Deploy User
+                    </h3>
+                    <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)' }}>
+                      Updating permissions for <strong>{selectedUserToAssign.name}</strong> ({selectedUserToAssign.email})
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => setSelectedUserToAssign(null)}
+                    style={{ background: 'none', border: 'none', fontSize: '1.25rem', cursor: 'pointer', color: '#94a3b8' }}
+                  >
+                    &times;
+                  </button>
+                </div>
+
+                <form onSubmit={handleAssignRoleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: '#334155', marginBottom: '0.35rem' }}>
+                      Select User Role:
+                    </label>
+                    <select
+                      value={assignRoleChoice}
+                      onChange={(e) => setAssignRoleChoice(e.target.value as any)}
+                      style={{
+                        width: '100%',
+                        padding: '0.6rem 0.75rem',
+                        borderRadius: 'var(--radius-sm)',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '0.9rem',
+                        fontWeight: 600,
+                        backgroundColor: '#ffffff'
+                      }}
+                    >
+                      <option value="teacher">👨‍🏫 Teacher / Form Tutor (Full Grading &amp; Attendance Access)</option>
+                      <option value="admin">🛡️ Admin / Principal (Full School Configuration &amp; Bursary)</option>
+                      <option value="parent">👨‍👩‍👧 Parent (Ward Monitoring &amp; School Fees)</option>
+                      <option value="student">🎓 Student (Terminal Reports &amp; Coursework)</option>
+                    </select>
+                  </div>
+
+                  {assignRoleChoice === 'teacher' && (
+                    <div
+                      style={{
+                        padding: '1rem',
+                        borderRadius: 'var(--radius-md)',
+                        backgroundColor: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem'
+                      }}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--primary-navy)' }}>
+                        Staff Deployment &amp; Allocation Details
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
+                            Staff ID No:
+                          </label>
+                          <input
+                            type="text"
+                            value={assignStaffNo}
+                            onChange={(e) => setAssignStaffNo(e.target.value)}
+                            style={{ width: '100%', padding: '0.45rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', fontSize: '0.825rem' }}
+                            placeholder="e.g. DIS/STF/2026/01"
+                          />
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
+                            Staff Phone No:
+                          </label>
+                          <input
+                            type="text"
+                            value={assignPhone}
+                            onChange={(e) => setAssignPhone(e.target.value)}
+                            style={{ width: '100%', padding: '0.45rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', fontSize: '0.825rem' }}
+                            placeholder="+234 803 000 0000"
+                          />
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
+                            Assigned Class:
+                          </label>
+                          <select
+                            value={assignClassLevel}
+                            onChange={(e) => setAssignClassLevel(e.target.value as ClassLevel)}
+                            style={{ width: '100%', padding: '0.45rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', fontSize: '0.825rem' }}
+                          >
+                            <option value="SSS 3">SSS 3</option>
+                            <option value="SSS 2">SSS 2</option>
+                            <option value="SSS 1">SSS 1</option>
+                            <option value="JSS 3">JSS 3</option>
+                            <option value="JSS 2">JSS 2</option>
+                            <option value="JSS 1">JSS 1</option>
+                            <option value="Basic 5">Basic 5</option>
+                            <option value="Basic 4">Basic 4</option>
+                            <option value="Basic 3">Basic 3</option>
+                            <option value="Basic 2">Basic 2</option>
+                            <option value="Basic 1">Basic 1</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
+                            Assigned Arm:
+                          </label>
+                          <select
+                            value={assignClassArm}
+                            onChange={(e) => setAssignClassArm(e.target.value as ClassArm)}
+                            style={{ width: '100%', padding: '0.45rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', fontSize: '0.825rem' }}
+                          >
+                            <option value="Emerald">Emerald Arm</option>
+                            <option value="Diamond">Diamond Arm</option>
+                            <option value="Gold">Gold Arm</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
+                          Assigned Subjects (comma-separated):
+                        </label>
+                        <input
+                          type="text"
+                          value={assignSubjects}
+                          onChange={(e) => setAssignSubjects(e.target.value)}
+                          style={{ width: '100%', padding: '0.45rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', fontSize: '0.825rem' }}
+                          placeholder="e.g. Mathematics, Further Mathematics, Physics"
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: '0.2rem' }}>
+                          Academic Qualifications:
+                        </label>
+                        <input
+                          type="text"
+                          value={assignQualification}
+                          onChange={(e) => setAssignQualification(e.target.value)}
+                          style={{ width: '100%', padding: '0.45rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1', fontSize: '0.825rem' }}
+                          placeholder="e.g. B.Sc (Ed) / Cambridge Certified"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.75rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedUserToAssign(null)}
+                      className="btn btn-outline"
+                      style={{ fontSize: '0.85rem' }}
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingRole}
+                      className="btn btn-primary"
+                      style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                    >
+                      {isSubmittingRole ? (
+                        <>
+                          <Loader2 size={16} className="spin" /> Updating Clerk &amp; DB...
+                        </>
+                      ) : (
+                        <>
+                          <Check size={16} /> Confirm &amp; Assign Role
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 2: Active Teacher Roster */}
+          <div className="card">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
+                  Active Academic Staff &amp; Form Tutor Roster
+                </h2>
+                <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Teachers actively deployed to class arms. Deployed Form Tutors can claim students from the intake pool and take morning roll call.
+                </p>
+              </div>
+            </div>
 
           {teachers.length === 0 ? (
             <div style={{ padding: '2.5rem', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
@@ -739,6 +1212,7 @@ export default function AdminView() {
               </div>
             </div>
           )}
+        </div>
         </div>
       )}
 
