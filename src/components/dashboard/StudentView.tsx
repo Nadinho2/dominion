@@ -17,15 +17,18 @@ import {
   ChevronRight
 } from 'lucide-react';
 import { useSchoolStore } from '../../lib/store';
+import { useUser } from '@clerk/nextjs';
 
 export default function StudentView() {
+  const { user } = useUser();
   const { students, grades } = useSchoolStore();
 
-  // Active student defaults to Chioma Adeyemi (std-1)
-  const [activeStudentId, setActiveStudentId] = useState<string>('std-1');
-  const activeStudent = students.find((s) => s.id === activeStudentId) || students[0];
+  const enrolledStudents = students.filter((s) => s.admissionStatus === 'Enrolled' || s.status === 'Active');
+  const [activeStudentId, setActiveStudentId] = useState<string>(enrolledStudents[0]?.id || '');
+  const activeStudent = enrolledStudents.find((s) => s.id === activeStudentId) || enrolledStudents[0];
 
-  const studentGrades = grades.filter((g) => g.studentId === activeStudent?.id);
+  const studentName = user?.fullName || user?.firstName || (activeStudent ? `${activeStudent.firstName} ${activeStudent.lastName}` : 'Scholar');
+  const studentGrades = activeStudent ? grades.filter((g) => g.studentId === activeStudent.id) : [];
 
   const TIMETABLE_TODAY = [
     { period: 'Registration', time: '07:45 - 08:15 AM', subject: 'Morning Assembly & Roll Call', room: 'Central Hall', teacher: 'Form Tutor' },
@@ -75,47 +78,46 @@ export default function StudentView() {
                 marginBottom: '0.75rem'
               }}
             >
-              <Trophy size={14} color="#ffd700" /> Proud Scholar of {activeStudent?.house} House
+              <Trophy size={14} color="#ffd700" /> Proud Scholar of {activeStudent?.house || 'Dominion'} House
             </div>
 
             <h1 style={{ fontSize: '1.875rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-              Welcome back, {activeStudent?.firstName}!
+              Welcome back, {studentName}!
             </h1>
             <p style={{ color: '#e2e8f0', fontSize: '0.925rem' }}>
-              {activeStudent?.classLevel} {activeStudent?.arm} Arm &bull; Admission No: <strong>{activeStudent?.admissionNo}</strong>
+              {activeStudent?.classLevel || 'Registered Student'} {activeStudent?.arm ? `${activeStudent.arm} Arm` : ''} &bull; Admission No: <strong>{activeStudent?.admissionNo || 'STUDENT-ACTIVE'}</strong>
             </p>
             <div style={{ fontSize: '0.8rem', color: '#cbd5e1', marginTop: '0.25rem' }}>
-              Personal House Points Contributed: <strong style={{ color: '#ffd700' }}>45 Points</strong> (Inter-House Relay &amp; Robotics Win)
+              Academic Session 2026/2027 &bull; Cambridge &amp; Nigerian Curriculum Track
             </div>
           </div>
 
-          {/* Student Switcher for testing */}
-          <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#ffd700', marginBottom: '0.35rem' }}>
-              Switch Student View:
-            </label>
-            <select
-              value={activeStudentId}
-              onChange={(e) => setActiveStudentId(e.target.value)}
-              style={{
-                padding: '0.45rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                color: '#0f172a',
-                border: 'none',
-                fontSize: '0.85rem',
-                fontWeight: 700
-              }}
-            >
-              {students
-                .filter((s) => s.admissionStatus === 'Enrolled')
-                .map((std) => (
+          {enrolledStudents.length > 1 && (
+            <div style={{ backgroundColor: 'rgba(0, 0, 0, 0.25)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-md)' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#ffd700', marginBottom: '0.35rem' }}>
+                Enrolled Profile:
+              </label>
+              <select
+                value={activeStudentId}
+                onChange={(e) => setActiveStudentId(e.target.value)}
+                style={{
+                  padding: '0.45rem 0.75rem',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  color: '#0f172a',
+                  border: 'none',
+                  fontSize: '0.85rem',
+                  fontWeight: 700
+                }}
+              >
+                {enrolledStudents.map((std) => (
                   <option key={std.id} value={std.id}>
                     {std.firstName} {std.lastName} ({std.classLevel})
                   </option>
                 ))}
-            </select>
-          </div>
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

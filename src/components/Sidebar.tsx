@@ -18,7 +18,10 @@ import {
 import { useSchoolStore } from '../lib/store';
 
 const ALL_NAV_ITEMS = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, roles: ['admin', 'teacher', 'student', 'parent'] },
+  { name: 'Admin Command', href: '/admin', icon: LayoutDashboard, roles: ['admin'] },
+  { name: 'Teacher Portal', href: '/teacher', icon: LayoutDashboard, roles: ['teacher'] },
+  { name: 'Student Portal', href: '/student', icon: LayoutDashboard, roles: ['student'] },
+  { name: 'Parent Portal', href: '/parent', icon: LayoutDashboard, roles: ['parent'] },
   { name: 'Students & SIS', href: '/dashboard/students', icon: Users, roles: ['admin'] },
   { name: 'Academics & Classes', href: '/dashboard/academics', icon: GraduationCap, roles: ['admin', 'teacher'] },
   { name: 'Attendance Register', href: '/dashboard/attendance', icon: CalendarCheck, roles: ['admin', 'teacher'] },

@@ -505,6 +505,11 @@ export default function AdminView() {
               These students have been assigned Houses and Admission Numbers. They are currently visible in the Form Tutor Claim Pool for teachers to pick into their class arms.
             </p>
 
+          {readyForClassStudents.length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
+              No students currently waiting in the claim pool. Approved applicants will appear here for teachers to claim.
+            </div>
+          ) : (
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                 <thead>
@@ -562,6 +567,7 @@ export default function AdminView() {
                 </tbody>
               </table>
             </div>
+          )}
           </div>
         </div>
       )}
@@ -580,61 +586,71 @@ export default function AdminView() {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {teachers.map((teacher) => (
-              <div
-                key={teacher.id}
-                style={{
-                  padding: '1.25rem',
-                  border: '1px solid #e2e8f0',
-                  borderRadius: 'var(--radius-md)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  flexWrap: 'wrap',
-                  gap: '1rem',
-                  backgroundColor: '#ffffff'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--primary-navy)' }}>
-                      {teacher.name}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 600 }}>
-                      {teacher.staffNo}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.825rem', color: '#64748b', marginTop: '0.25rem' }}>
-                    {teacher.qualification} &bull; {teacher.email} &bull; {teacher.phone}
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
-                      Form Tutor: {teacher.assignedClass || 'Unassigned'} {teacher.assignedArm || ''}
-                    </span>
-                    {teacher.subjects.map((sub, i) => (
-                      <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155' }}>
-                        {sub}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => {
-                    setEditingTeacherId(teacher.id);
-                    setAssignedClassInput(teacher.assignedClass || 'SSS 2');
-                    setAssignedArmInput(teacher.assignedArm || 'Emerald');
-                    setTeacherSubjectsInput(teacher.subjects.join(', '));
-                  }}
-                  className="btn btn-outline"
-                  style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}
-                >
-                  <Edit2 size={14} /> Reassign Class &amp; Subjects
-                </button>
+          {teachers.length === 0 ? (
+            <div style={{ padding: '2.5rem', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
+              <Users size={36} color="#64748b" style={{ margin: '0 auto 0.75rem' }} />
+              <div style={{ fontWeight: 700, color: 'var(--primary-navy)' }}>No Teachers Registered Yet</div>
+              <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                Academic staff members registered with the teacher role will appear here for class and subject deployment.
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              {teachers.map((teacher) => (
+                <div
+                  key={teacher.id}
+                  style={{
+                    padding: '1.25rem',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: 'var(--radius-md)',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '1rem',
+                    backgroundColor: '#ffffff'
+                  }}
+                >
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--primary-navy)' }}>
+                        {teacher.name}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 600 }}>
+                        {teacher.staffNo}
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '0.825rem', color: '#64748b', marginTop: '0.25rem' }}>
+                      {teacher.qualification} &bull; {teacher.email} &bull; {teacher.phone}
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
+                        Form Tutor: {teacher.assignedClass || 'Unassigned'} {teacher.assignedArm || ''}
+                      </span>
+                      {teacher.subjects.map((sub, i) => (
+                        <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155' }}>
+                          {sub}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setEditingTeacherId(teacher.id);
+                      setAssignedClassInput(teacher.assignedClass || 'SSS 2');
+                      setAssignedArmInput(teacher.assignedArm || 'Emerald');
+                      setTeacherSubjectsInput(teacher.subjects.join(', '));
+                    }}
+                    className="btn btn-outline"
+                    style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}
+                  >
+                    <Edit2 size={14} /> Reassign Class &amp; Subjects
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Teacher Reassignment Drawer/Modal */}
           {editingTeacherId && (

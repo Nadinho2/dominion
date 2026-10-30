@@ -1,21 +1,38 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { UserRole } from '../lib/types';
 import { useSchoolStore } from '../lib/store';
-import { User, BellRing, Sparkles } from 'lucide-react';
+import { useUser, UserButton } from '@clerk/nextjs';
+import { BellRing, Sparkles, ShieldCheck } from 'lucide-react';
 
 export default function TopNav() {
   const { role, changeRole } = useSchoolStore();
+  const { user, isLoaded } = useUser();
 
-  const ROLES: { id: UserRole; label: string; demoUser: string }[] = [
-    { id: 'admin', label: 'Admin/Principal', demoUser: 'Dr. O. Adeleke' },
-    { id: 'teacher', label: 'Teacher', demoUser: 'Mrs. C. Eze' },
-    { id: 'student', label: 'Student', demoUser: 'Chioma Adeyemi' },
-    { id: 'parent', label: 'Parent', demoUser: 'Dr. B. Adeyemi' }
+  // Sync role from Clerk metadata if present
+  useEffect(() => {
+    if (isLoaded && user) {
+      const clerkRole = (user.publicMetadata?.role as UserRole) || 
+        (user.organizationMemberships?.[0]?.role === 'org:admin' ? 'admin' : null);
+      if (clerkRole && clerkRole !== role) {
+        changeRole(clerkRole);
+      }
+    }
+  }, [isLoaded, user]);
+
+  const ROLES: { id: UserRole; label: string }[] = [
+    { id: 'admin', label: 'Admin/Principal' },
+    { id: 'teacher', label: 'Teacher' },
+    { id: 'student', label: 'Student' },
+    { id: 'parent', label: 'Parent' }
   ];
 
-  const currentRoleObj = ROLES.find((r) => r.id === role) || ROLES[0];
+  const displayName = user
+    ? user.fullName || user.firstName || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User'
+    : 'Signing In...';
+
+  const displayEmail = user?.primaryEmailAddress?.emailAddress || '';
 
   return (
     <header
@@ -57,7 +74,7 @@ export default function TopNav() {
         </div>
       </div>
 
-      {/* Right Controls: Role Switcher & Profile */}
+      {/* Right Controls: Role Switcher & Real Authenticated User Profile */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
         {/* Role Switcher Toolbar */}
         <div
@@ -72,7 +89,7 @@ export default function TopNav() {
           }}
         >
           <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b', padding: '0 0.5rem' }}>
-            Switch Role:
+            Active Role:
           </span>
           {ROLES.map((r) => {
             const isSelected = role === r.id;
@@ -129,36 +146,41 @@ export default function TopNav() {
           />
         </div>
 
-        {/* Current User Card */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+        {/* Real Authenticated User Badge & Clerk UserButton */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.2 }}>
+              {displayName}
+            </div>
+            <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.25rem' }}>
+              <ShieldCheck size={12} color="var(--gold-dark)" />
+              <span style={{ textTransform: 'capitalize', fontWeight: 600 }}>{role}</span>
+              {displayEmail && <span style={{ opacity: 0.7 }}>&bull; {displayEmail}</span>}
+            </div>
+          </div>
+
           <div
             style={{
-              width: '38px',
-              height: '38px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--secondary-navy)',
-              color: 'var(--gold-light)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: 700,
-              fontSize: '0.875rem',
-              border: '2px solid var(--gold-primary)'
+              borderRadius: '50%',
+              padding: '2px',
+              border: '2px solid var(--gold-primary)',
+              backgroundColor: '#ffffff'
             }}
           >
-            <User size={18} />
-          </div>
-          <div>
-            <div style={{ fontSize: '0.8125rem', fontWeight: 700, color: 'var(--text-main)' }}>
-              {currentRoleObj.demoUser}
-            </div>
-            <div style={{ fontSize: '0.6875rem', color: 'var(--text-muted)', textTransform: 'capitalize' }}>
-              {role}
-            </div>
+            <UserButton
+              afterSignOutUrl="/"
+              appearance={{
+                elements: {
+                  avatarBox: { width: '34px', height: '34px' }
+                }
+              }}
+            />
           </div>
         </div>
       </div>
     </header>
   );
 }
-

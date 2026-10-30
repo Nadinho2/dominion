@@ -19,8 +19,10 @@ import {
 } from 'lucide-react';
 import { useSchoolStore } from '../../lib/store';
 import { Student, AttendanceRecord } from '../../lib/types';
+import { useUser } from '@clerk/nextjs';
 
 export default function TeacherView() {
+  const { user } = useUser();
   const {
     students,
     teachers,
@@ -30,16 +32,18 @@ export default function TeacherView() {
     addGrade
   } = useSchoolStore();
 
-  // Active Teacher Profile (Defaults to Mr. Olumide Adeleke, SSS 2 Emerald)
-  const [activeTeacherId, setActiveTeacherId] = useState<string>(teachers[0]?.id || 'tch-1');
-  const activeTeacher = teachers.find((t) => t.id === activeTeacherId) || teachers[0];
+  // Active Teacher Profile (Tied to real logged-in user or active selection)
+  const [activeTeacherId, setActiveTeacherId] = useState<string>(teachers[0]?.id || 'current-user');
+  const activeTeacher = teachers.find((t) => t.id === activeTeacherId);
 
+  const teacherName = user?.fullName || activeTeacher?.name || 'Form Tutor';
   const teacherClass = activeTeacher?.assignedClass || 'SSS 2';
   const teacherArm = activeTeacher?.assignedArm || 'Emerald';
+  const teacherId = activeTeacher?.id || user?.id || 'current-user';
 
   // 1. My Class Roster (Students claimed by this specific teacher)
   const myClassStudents = students.filter(
-    (s) => s.assignedTeacherId === activeTeacher?.id && s.admissionStatus === 'Enrolled'
+    (s) => (s.assignedTeacherId === teacherId || s.assignedTeacherId === activeTeacher?.id) && s.admissionStatus === 'Enrolled'
   );
 
   // 2. Unassigned Claim Pool (Students ready for class & NOT claimed by any teacher yet!)
@@ -64,7 +68,7 @@ export default function TeacherView() {
   const [attendanceSaved, setAttendanceSaved] = useState(false);
 
   const handleClaim = async (student: Student) => {
-    await claimStudent(student.id, activeTeacher.id, teacherArm, teacherClass);
+    await claimStudent(student.id, teacherId, teacherArm, teacherClass);
     setClaimNotification(
       `Successfully enrolled ${student.firstName} ${student.lastName} into ${teacherClass} ${teacherArm}! This student is now exclusively locked to your class.`
     );
@@ -131,41 +135,42 @@ export default function TeacherView() {
             </div>
 
             <h1 style={{ fontSize: '1.875rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-              Welcome, {activeTeacher?.name}
+              Welcome, {teacherName}
             </h1>
             <p style={{ color: '#cbd5e1', fontSize: '0.925rem', lineHeight: 1.6 }}>
-              Assigned Form Tutor: <strong style={{ color: '#ffffff' }}>{teacherClass} {teacherArm} Arm</strong> &bull; Staff ID: {activeTeacher?.staffNo}
+              Assigned Form Tutor: <strong style={{ color: '#ffffff' }}>{teacherClass} {teacherArm} Arm</strong> &bull; Staff ID: {activeTeacher?.staffNo || 'STAFF-VERIFIED'}
             </p>
             <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.25rem' }}>
-              Subjects Taught: {activeTeacher?.subjects.join(', ')}
+              Subjects Taught: {activeTeacher?.subjects?.length ? activeTeacher.subjects.join(', ') : 'Mathematics, STEM'}
             </div>
           </div>
 
-          {/* Teacher Selector for testing different teacher accounts */}
-          <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--gold-light)', marginBottom: '0.35rem' }}>
-              Test As Another Teacher:
-            </label>
-            <select
-              value={activeTeacherId}
-              onChange={(e) => setActiveTeacherId(e.target.value)}
-              style={{
-                padding: '0.5rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'var(--primary-navy)',
-                color: '#ffffff',
-                border: '1px solid var(--gold-primary)',
-                fontSize: '0.85rem',
-                fontWeight: 600
-              }}
-            >
-              {teachers.map((tch) => (
-                <option key={tch.id} value={tch.id}>
-                  {tch.name} ({tch.assignedClass || 'SSS'} {tch.assignedArm || 'Emerald'})
-                </option>
-              ))}
-            </select>
-          </div>
+          {teachers.length > 1 && (
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--gold-light)', marginBottom: '0.35rem' }}>
+                Assigned Staff Account:
+              </label>
+              <select
+                value={activeTeacherId}
+                onChange={(e) => setActiveTeacherId(e.target.value)}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--primary-navy)',
+                  color: '#ffffff',
+                  border: '1px solid var(--gold-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600
+                }}
+              >
+                {teachers.map((tch) => (
+                  <option key={tch.id} value={tch.id}>
+                    {tch.name} ({tch.assignedClass || 'SSS'} {tch.assignedArm || 'Emerald'})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 

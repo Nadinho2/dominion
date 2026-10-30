@@ -21,27 +21,30 @@ import {
 } from 'lucide-react';
 import { useSchoolStore } from '../../lib/store';
 import { Student } from '../../lib/types';
+import { useUser } from '@clerk/nextjs';
 
 export default function ParentView() {
+  const { user } = useUser();
   const { students, grades, fees, busRoutes, teachers } = useSchoolStore();
 
-  // Find enrolled students for demo ward switching
+  // Find enrolled students for ward switching
   const enrolledStudents = students.filter((s) => s.admissionStatus === 'Enrolled' || s.status === 'Active');
-  const [selectedWardId, setSelectedWardId] = useState<string>(enrolledStudents[0]?.id || 'std-1');
+  const [selectedWardId, setSelectedWardId] = useState<string>(enrolledStudents[0]?.id || '');
 
   const selectedWard = enrolledStudents.find((s) => s.id === selectedWardId) || enrolledStudents[0];
+  const parentName = user?.fullName || user?.firstName || selectedWard?.guardianName || 'Parent / Guardian';
 
   // Ward's Form Tutor
-  const formTutor = teachers.find((t) => t.id === selectedWard?.assignedTeacherId) || teachers[0];
+  const formTutor = teachers.find((t) => t.id === selectedWard?.assignedTeacherId);
 
   // Ward's Grades
-  const wardGrades = grades.filter((g) => g.studentId === selectedWard?.id);
+  const wardGrades = selectedWard ? grades.filter((g) => g.studentId === selectedWard.id) : [];
 
   // Ward's Fee Invoice
-  const wardFee = fees.find((f) => f.studentId === selectedWard?.id) || fees[0];
+  const wardFee = selectedWard ? fees.find((f) => f.studentId === selectedWard.id) : undefined;
 
   // Ward's Bus Route
-  const wardBus = busRoutes.find((b) => b.id === selectedWard?.busRouteId) || busRoutes[0];
+  const wardBus = selectedWard ? busRoutes.find((b) => b.id === selectedWard.busRouteId) : undefined;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -77,7 +80,7 @@ export default function ParentView() {
             </div>
 
             <h1 style={{ fontSize: '1.875rem', fontWeight: 800, marginBottom: '0.5rem' }}>
-              Welcome, {selectedWard?.guardianName || 'Parent / Guardian'}
+              Welcome, {parentName}
             </h1>
             <p style={{ color: '#cbd5e1', fontSize: '0.925rem' }}>
               Monitoring academic growth, morning roll call, bus tracking, and bursary payments for your ward(s).
@@ -85,35 +88,52 @@ export default function ParentView() {
           </div>
 
           {/* Multi-Child / Ward Selector */}
-          <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
-            <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--gold-light)', marginBottom: '0.35rem' }}>
-              Select Active Ward:
-            </label>
-            <select
-              value={selectedWardId}
-              onChange={(e) => setSelectedWardId(e.target.value)}
-              style={{
-                padding: '0.5rem 0.75rem',
-                borderRadius: 'var(--radius-sm)',
-                backgroundColor: 'var(--primary-navy)',
-                color: '#ffffff',
-                border: '1px solid var(--gold-primary)',
-                fontSize: '0.85rem',
-                fontWeight: 600
-              }}
-            >
-              {enrolledStudents.map((std) => (
-                <option key={std.id} value={std.id}>
-                  {std.firstName} {std.lastName} ({std.classLevel} {std.arm})
-                </option>
-              ))}
-            </select>
-          </div>
+          {enrolledStudents.length > 1 && (
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255, 255, 255, 0.15)' }}>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: 'var(--gold-light)', marginBottom: '0.35rem' }}>
+                Select Active Ward:
+              </label>
+              <select
+                value={selectedWardId}
+                onChange={(e) => setSelectedWardId(e.target.value)}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: 'var(--radius-sm)',
+                  backgroundColor: 'var(--primary-navy)',
+                  color: '#ffffff',
+                  border: '1px solid var(--gold-primary)',
+                  fontSize: '0.85rem',
+                  fontWeight: 600
+                }}
+              >
+                {enrolledStudents.map((std) => (
+                  <option key={std.id} value={std.id}>
+                    {std.firstName} {std.lastName} ({std.classLevel} {std.arm})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Ward Status Overview Cards */}
-      <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+      {!selectedWard ? (
+        <div className="card" style={{ padding: '3.5rem 2rem', textAlign: 'center', backgroundColor: '#ffffff', borderRadius: 'var(--radius-xl)' }}>
+          <Users size={44} color="#64748b" style={{ margin: '0 auto 1rem' }} />
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
+            No Wards Linked to Your Account Yet
+          </h3>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', maxWidth: '520px', margin: '0.5rem auto 1.5rem' }}>
+            When you complete the digital admission application and your ward is admitted by the school, their live attendance register, term grades, bus route tracking, and official report cards will appear directly in this portal.
+          </p>
+          <Link href="/admissions" className="btn btn-primary" style={{ display: 'inline-flex' }}>
+            Open Online Admission Form &rarr;
+          </Link>
+        </div>
+      ) : (
+        <>
+          {/* Ward Status Overview Cards */}
+          <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
         {/* Ward Identity */}
         <div className="card">
           <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
@@ -359,6 +379,8 @@ export default function ParentView() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }

@@ -25,15 +25,15 @@ import {
 import { createClient } from './supabase/client';
 
 const STORAGE_KEYS = {
-  ROLE: 'dis_sms_role',
-  STUDENTS: 'dis_sms_students_v2',
-  TEACHERS: 'dis_sms_teachers_v2',
-  SUBJECTS: 'dis_sms_subjects_v2',
-  GRADES: 'dis_sms_grades',
-  FEES: 'dis_sms_fees',
-  ATTENDANCE: 'dis_sms_attendance',
-  BUS_ROUTES: 'dis_sms_bus_routes_v2',
-  ANNOUNCEMENTS: 'dis_sms_announcements'
+  ROLE: 'dis_sms_role_v3',
+  STUDENTS: 'dis_sms_students_v3',
+  TEACHERS: 'dis_sms_teachers_v3',
+  SUBJECTS: 'dis_sms_subjects_v3',
+  GRADES: 'dis_sms_grades_v3',
+  FEES: 'dis_sms_fees_v3',
+  ATTENDANCE: 'dis_sms_attendance_v3',
+  BUS_ROUTES: 'dis_sms_bus_routes_v3',
+  ANNOUNCEMENTS: 'dis_sms_announcements_v3'
 };
 
 export function getStoredRole(): UserRole {

@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS public.announcements (
 );
 
 -- ------------------------------------------------------------------------------
--- 10. ENABLE ROW LEVEL SECURITY (RLS)
+-- 10. ROW LEVEL SECURITY (RLS) - STRICT ROLE & IDENTITY ACCESS POLICIES
 -- ------------------------------------------------------------------------------
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
@@ -180,44 +180,138 @@ ALTER TABLE public.fee_invoices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.bus_routes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
 
--- Permissive Read/Write policies for authenticated users & anon demo access
+-- Helper: Get current user role from profiles
+CREATE OR REPLACE FUNCTION public.current_user_role()
+RETURNS TEXT LANGUAGE sql STABLE AS $$
+  SELECT COALESCE(
+    (SELECT role FROM public.profiles WHERE clerk_id = auth.jwt() ->> 'sub'),
+    auth.jwt() -> 'app_metadata' ->> 'role',
+    auth.jwt() ->> 'role',
+    'student'
+  );
+$$;
+
+-- Drop legacy permissive policies if they exist
 DO $$
 BEGIN
-    -- Students
-    EXECUTE 'CREATE POLICY "Allow public read on students" ON public.students FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on students" ON public.students FOR ALL TO authenticated USING (true);';
-    EXECUTE 'CREATE POLICY "Allow service_role on students" ON public.students FOR ALL TO service_role USING (true);';
-
-    -- Teachers
-    EXECUTE 'CREATE POLICY "Allow public read on teachers" ON public.teachers FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on teachers" ON public.teachers FOR ALL TO authenticated USING (true);';
-
-    -- Subjects
-    EXECUTE 'CREATE POLICY "Allow public read on subjects" ON public.subjects FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on subjects" ON public.subjects FOR ALL TO authenticated USING (true);';
-
-    -- Attendance
-    EXECUTE 'CREATE POLICY "Allow public read on attendance" ON public.attendance FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on attendance" ON public.attendance FOR ALL TO authenticated USING (true);';
-
-    -- Grades
-    EXECUTE 'CREATE POLICY "Allow public read on grades" ON public.grades FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on grades" ON public.grades FOR ALL TO authenticated USING (true);';
-
-    -- Fees
-    EXECUTE 'CREATE POLICY "Allow public read on fee_invoices" ON public.fee_invoices FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on fee_invoices" ON public.fee_invoices FOR ALL TO authenticated USING (true);';
-
-    -- Bus Routes
-    EXECUTE 'CREATE POLICY "Allow public read on bus_routes" ON public.bus_routes FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on bus_routes" ON public.bus_routes FOR ALL TO authenticated USING (true);';
-
-    -- Announcements
-    EXECUTE 'CREATE POLICY "Allow public read on announcements" ON public.announcements FOR SELECT USING (true);';
-    EXECUTE 'CREATE POLICY "Allow auth all on announcements" ON public.announcements FOR ALL TO authenticated USING (true);';
+    DROP POLICY IF EXISTS "Allow public read on students" ON public.students;
+    DROP POLICY IF EXISTS "Allow auth all on students" ON public.students;
+    DROP POLICY IF EXISTS "Allow public read on fee_invoices" ON public.fee_invoices;
+    DROP POLICY IF EXISTS "Allow auth all on fee_invoices" ON public.fee_invoices;
+    DROP POLICY IF EXISTS "Allow public read on grades" ON public.grades;
+    DROP POLICY IF EXISTS "Allow auth all on grades" ON public.grades;
+    DROP POLICY IF EXISTS "Allow public read on attendance" ON public.attendance;
+    DROP POLICY IF EXISTS "Allow auth all on attendance" ON public.attendance;
 EXCEPTION
-    WHEN duplicate_object THEN NULL;
+    WHEN undefined_object THEN NULL;
 END $$;
+
+-- 10.1 PROFILES POLICIES
+CREATE POLICY "Users can read profiles" ON public.profiles
+    FOR SELECT TO authenticated USING (true);
+
+CREATE POLICY "Users can update own profile" ON public.profiles
+    FOR UPDATE TO authenticated USING (clerk_id = auth.jwt() ->> 'sub');
+
+-- 10.2 STUDENTS POLICIES (Role-Segmented)
+-- Admin: Full Access
+CREATE POLICY "Admin full access on students" ON public.students
+    FOR ALL TO authenticated
+    USING (public.current_user_role() = 'admin')
+    WITH CHECK (public.current_user_role() = 'admin');
+
+-- Teachers: Can view assigned students and available unassigned claim pool
+CREATE POLICY "Teacher view students" ON public.students
+    FOR SELECT TO authenticated
+    USING (
+      public.current_user_role() = 'teacher' 
+      AND (admission_status = 'Ready for Class' OR assigned_teacher_id IS NOT NULL)
+    );
+
+CREATE POLICY "Teacher claim students" ON public.students
+    FOR UPDATE TO authenticated
+    USING (public.current_user_role() = 'teacher')
+    WITH CHECK (public.current_user_role() = 'teacher');
+
+-- Parents: Can only view their own ward
+CREATE POLICY "Parent view own ward" ON public.students
+    FOR SELECT TO authenticated
+    USING (
+      public.current_user_role() = 'parent' 
+      AND guardian_email = auth.jwt() ->> 'email'
+    );
+
+-- 10.3 GRADES POLICIES
+CREATE POLICY "Admin full access on grades" ON public.grades
+    FOR ALL TO authenticated
+    USING (public.current_user_role() = 'admin');
+
+CREATE POLICY "Teacher insert and update grades" ON public.grades
+    FOR ALL TO authenticated
+    USING (public.current_user_role() = 'teacher');
+
+CREATE POLICY "Parent view ward grades" ON public.grades
+    FOR SELECT TO authenticated
+    USING (
+      public.current_user_role() = 'parent'
+      AND student_id IN (
+        SELECT id FROM public.students WHERE guardian_email = auth.jwt() ->> 'email'
+      )
+    );
+
+CREATE POLICY "Student view own grades" ON public.grades
+    FOR SELECT TO authenticated
+    USING (
+      public.current_user_role() = 'student'
+      AND student_id IN (
+        SELECT id FROM public.students WHERE guardian_email = auth.jwt() ->> 'email' OR admission_no = auth.jwt() ->> 'preferred_username'
+      )
+    );
+
+-- 10.4 FEE INVOICES POLICIES (Protected from students & teachers)
+CREATE POLICY "Admin full access on fees" ON public.fee_invoices
+    FOR ALL TO authenticated
+    USING (public.current_user_role() = 'admin');
+
+CREATE POLICY "Parent view and pay ward fees" ON public.fee_invoices
+    FOR SELECT TO authenticated
+    USING (
+      public.current_user_role() = 'parent'
+      AND student_id IN (
+        SELECT id FROM public.students WHERE guardian_email = auth.jwt() ->> 'email'
+      )
+    );
+
+-- 10.5 ATTENDANCE POLICIES
+CREATE POLICY "Admin full access on attendance" ON public.attendance
+    FOR ALL TO authenticated
+    USING (public.current_user_role() = 'admin');
+
+CREATE POLICY "Teacher manage class attendance" ON public.attendance
+    FOR ALL TO authenticated
+    USING (public.current_user_role() = 'teacher');
+
+CREATE POLICY "Parent view ward attendance" ON public.attendance
+    FOR SELECT TO authenticated
+    USING (
+      public.current_user_role() = 'parent'
+      AND student_id IN (
+        SELECT id FROM public.students WHERE guardian_email = auth.jwt() ->> 'email'
+      )
+    );
+
+-- 10.6 GENERAL REFERENCE TABLES (Read-only for all, managed by admin)
+CREATE POLICY "Everyone read subjects" ON public.subjects FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin manage subjects" ON public.subjects FOR ALL TO authenticated USING (public.current_user_role() = 'admin');
+
+CREATE POLICY "Everyone read bus_routes" ON public.bus_routes FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin manage bus_routes" ON public.bus_routes FOR ALL TO authenticated USING (public.current_user_role() = 'admin');
+
+CREATE POLICY "Everyone read announcements" ON public.announcements FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin manage announcements" ON public.announcements FOR ALL TO authenticated USING (public.current_user_role() = 'admin');
+
+CREATE POLICY "Everyone read teachers" ON public.teachers FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admin manage teachers" ON public.teachers FOR ALL TO authenticated USING (public.current_user_role() = 'admin');
 
 -- ------------------------------------------------------------------------------
 -- 11. STORAGE BUCKETS SETUP
