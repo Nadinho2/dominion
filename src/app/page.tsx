@@ -206,7 +206,7 @@ export default function PublicHomePage() {
             </h1>
 
             <p style={{ fontSize: '1.05rem', color: '#cbd5e1', lineHeight: 1.7, marginBottom: '2rem' }}>
-              From Montessori Early Years to Cambridge IGCSE and WAEC/WASSCE excellence. Featuring full-stack digital student management, robotics laboratories, and active inter-house sports championships.
+              From Montessori Early Years to Cambridge IGCSE and WAEC/WASSCE excellence. Featuring comprehensive digital student management, robotics laboratories, and active inter-house sports championships.
             </p>
 
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>

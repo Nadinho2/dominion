@@ -120,7 +120,7 @@ export default function AcademicsPage() {
                           {lvl}
                         </span>
                         <span className="badge badge-sapphire">
-                          {studentCount > 0 ? `${studentCount * 24} Students` : '28 Enrolled'}
+                          {studentCount === 1 ? '1 Student' : `${studentCount} Students`}
                         </span>
                       </div>
 
@@ -139,7 +139,7 @@ export default function AcademicsPage() {
                       >
                         <div style={{ color: 'var(--text-muted)', fontSize: '0.675rem' }}>Form Master / Mistress:</div>
                         <div style={{ fontWeight: 600, color: 'var(--text-main)' }}>
-                          {assignedTeacher ? assignedTeacher.name : 'Staff Assigned (Mr. Babatunde)'}
+                          {assignedTeacher ? assignedTeacher.name : 'Unassigned (Awaiting Deployment)'}
                         </div>
                       </div>
                     </div>

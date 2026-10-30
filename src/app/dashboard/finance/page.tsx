@@ -82,7 +82,7 @@ export default function FinancePage() {
               &#8358;{totalPaid.toLocaleString()}
             </div>
             <div style={{ fontSize: '0.7rem', color: 'var(--emerald)', fontWeight: 600, display: 'flex', alignItems: 'center' }}>
-              <ArrowUpRight size={14} /> {Math.round((totalPaid / totalInvoiced) * 100)}% Collection Rate
+              <ArrowUpRight size={14} /> {totalInvoiced > 0 ? Math.round((totalPaid / totalInvoiced) * 100) : 0}% Collection Rate
             </div>
           </div>
         </div>
@@ -118,7 +118,14 @@ export default function FinancePage() {
             </tr>
           </thead>
           <tbody>
-            {fees.map((inv) => {
+            {fees.length === 0 ? (
+              <tr>
+                <td colSpan={9} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
+                  No fee invoices generated yet. Invoices for enrolled students will appear here for bursary tracking and official receipt generation.
+                </td>
+              </tr>
+            ) : (
+              fees.map((inv) => {
               const student = students.find((s) => s.id === inv.studentId);
 
               return (
@@ -172,7 +179,8 @@ export default function FinancePage() {
                   </td>
                 </tr>
               );
-            })}
+            })
+          )}
           </tbody>
         </table>
       </div>

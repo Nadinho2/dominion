@@ -191,7 +191,14 @@ export default function AttendancePage() {
             </tr>
           </thead>
           <tbody>
-            {classStudents.map((student) => {
+            {classStudents.length === 0 ? (
+              <tr>
+                <td colSpan={5} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
+                  No students currently enrolled in {selectedClass} ({selectedArm}). Newly enrolled students will appear here for morning roll call.
+                </td>
+              </tr>
+            ) : (
+              classStudents.map((student) => {
               const currentStatus = sheet[student.id] || 'Present';
 
               return (
@@ -302,7 +309,8 @@ export default function AttendancePage() {
                   </td>
                 </tr>
               );
-            })}
+            })
+          )}
           </tbody>
         </table>
       </div>

@@ -110,7 +110,14 @@ export default function GradesPage() {
             </tr>
           </thead>
           <tbody>
-            {students.map((student) => {
+            {students.length === 0 ? (
+              <tr>
+                <td colSpan={7} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--text-muted)' }}>
+                  No enrolled students yet. When students are enrolled into classes, their assessment dossiers and printable report cards will appear here.
+                </td>
+              </tr>
+            ) : (
+              students.map((student) => {
               const studentGrades = getStudentGrades(student.id);
               const totalScore = studentGrades.reduce((acc, g) => acc + g.total, 0);
               const avg = studentGrades.length > 0 ? Math.round(totalScore / studentGrades.length) : 0;
@@ -162,7 +169,8 @@ export default function GradesPage() {
                   </td>
                 </tr>
               );
-            })}
+            })
+          )}
           </tbody>
         </table>
       </div>
