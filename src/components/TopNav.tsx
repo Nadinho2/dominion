@@ -10,7 +10,7 @@ export default function TopNav() {
   const { role, changeRole } = useSchoolStore();
   const { user, isLoaded } = useUser();
 
-  // Sync role from Clerk metadata if present
+  // Strictly sync role from Clerk authenticated user metadata
   useEffect(() => {
     if (isLoaded && user) {
       const clerkRole = (user.publicMetadata?.role as UserRole) || 
@@ -19,18 +19,11 @@ export default function TopNav() {
         changeRole(clerkRole);
       }
     }
-  }, [isLoaded, user]);
-
-  const ROLES: { id: UserRole; label: string }[] = [
-    { id: 'admin', label: 'Admin/Principal' },
-    { id: 'teacher', label: 'Teacher' },
-    { id: 'student', label: 'Student' },
-    { id: 'parent', label: 'Parent' }
-  ];
+  }, [isLoaded, user, role, changeRole]);
 
   const displayName = user
     ? user.fullName || user.firstName || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User'
-    : 'Signing In...';
+    : 'Authenticated User';
 
   const displayEmail = user?.primaryEmailAddress?.emailAddress || '';
 
@@ -74,47 +67,8 @@ export default function TopNav() {
         </div>
       </div>
 
-      {/* Right Controls: Role Switcher & Real Authenticated User Profile */}
+      {/* Right Controls: Real Authenticated User Profile & Sign Out */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-        {/* Role Switcher Toolbar */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: '#f1f5f9',
-            padding: '0.25rem',
-            borderRadius: 'var(--radius-md)',
-            border: '1px solid #e2e8f0',
-            gap: '0.25rem'
-          }}
-        >
-          <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#64748b', padding: '0 0.5rem' }}>
-            Active Role:
-          </span>
-          {ROLES.map((r) => {
-            const isSelected = role === r.id;
-            return (
-              <button
-                key={r.id}
-                onClick={() => changeRole(r.id)}
-                style={{
-                  border: 'none',
-                  padding: '0.3rem 0.65rem',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.75rem',
-                  fontWeight: isSelected ? 700 : 500,
-                  backgroundColor: isSelected ? 'var(--primary-navy)' : 'transparent',
-                  color: isSelected ? '#ffffff' : '#475569',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s ease'
-                }}
-              >
-                {r.label}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Notifications Icon */}
         <div
           style={{
