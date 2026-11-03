@@ -453,6 +453,25 @@ export function useSchoolStore() {
         console.warn('Supabase assignHouse warning:', e);
       }
     }
+
+    // Dispatch Official Admission & House Induction Email
+    if (targetStudent?.guardianEmail && typeof window !== 'undefined') {
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'admission_welcome',
+          payload: {
+            guardianEmail: targetStudent.guardianEmail,
+            guardianName: targetStudent.guardianName || 'Parent / Guardian',
+            studentName: `${targetStudent.firstName} ${targetStudent.lastName}`,
+            admissionNo: finalAdmissionNo,
+            classLevel: targetStudent.classLevel,
+            house
+          }
+        })
+      }).catch(e => console.warn('Admission welcome email dispatch warning:', e));
+    }
   };
 
   // 4. Public Self-Registration for Students & Parents

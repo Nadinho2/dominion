@@ -60,6 +60,24 @@ export default function AdmissionsPage() {
       });
 
       setSubmittedRef(student.admissionNo);
+
+      // Trigger automatic Application Acknowledged Email
+      if (formData.guardianEmail) {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'application_acknowledged',
+            payload: {
+              guardianEmail: formData.guardianEmail,
+              guardianName: formData.guardianName || 'Parent / Guardian',
+              studentName: `${formData.firstName} ${formData.lastName}`.trim(),
+              applicationRef: student.admissionNo,
+              classLevel: formData.classLevel
+            }
+          })
+        }).catch(e => console.warn('Email dispatch non-blocking notification:', e));
+      }
     } catch (err) {
       console.error(err);
     } finally {

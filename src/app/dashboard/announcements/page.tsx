@@ -27,6 +27,32 @@ export default function AnnouncementsPage() {
       content
     });
 
+    // Trigger email broadcast for announcements
+    const emailType =
+      category === 'Emergency'
+        ? 'urgent_advisory'
+        : title.toLowerCase().includes('pta')
+        ? 'pta_meeting'
+        : 'newsletter';
+
+    fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: emailType,
+        payload: {
+          recipientEmail: 'community@dominioninternational.sch.ng',
+          recipientName: 'Dominion International School Community',
+          title,
+          headline: title,
+          advisoryBody: content,
+          highlightSnippet: content,
+          meetingDate: 'Upcoming Saturday at 10:00 AM',
+          meetingTime: '10:00 AM WAT'
+        }
+      })
+    }).catch((err) => console.warn('Announcement email broadcast notice:', err));
+
     setIsModalOpen(false);
     setTitle('');
     setContent('');
@@ -128,6 +154,7 @@ export default function AnnouncementsPage() {
                     <option value="Sports">Sports &amp; Houses</option>
                     <option value="Event">Event / Celebration</option>
                     <option value="Administrative">Administrative</option>
+                    <option value="Emergency">Urgent Advisory / Emergency</option>
                   </select>
                 </div>
 

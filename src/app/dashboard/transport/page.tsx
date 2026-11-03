@@ -1,11 +1,36 @@
 'use client';
 
-import React from 'react';
-import { Bus, MapPin, Phone, Users, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bus, MapPin, Phone, Users, ShieldCheck, AlertCircle } from 'lucide-react';
 import { useSchoolStore } from '../../../lib/store';
 
 export default function TransportPage() {
   const { busRoutes } = useSchoolStore();
+  const [advisorySent, setAdvisorySent] = useState<string | null>(null);
+
+  const handleBroadcastDelay = async (routeVehicle: string, routeTitle: string) => {
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'bus_delay',
+          payload: {
+            guardianEmail: 'transit-parents@dominioninternational.sch.ng',
+            guardianName: 'Transit Route Parents',
+            routeNumber: routeVehicle,
+            routeName: routeTitle,
+            delayEstimate: '15 - 20 Minutes',
+            reason: 'Heavy evening traffic buildup along Airport Road corridor & Ajao Junction'
+          }
+        })
+      });
+      setAdvisorySent(routeVehicle);
+      setTimeout(() => setAdvisorySent(null), 3500);
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -99,7 +124,15 @@ export default function TransportPage() {
               </div>
             </div>
 
-            <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)' }}>
+            <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <button
+                onClick={() => handleBroadcastDelay(route.vehicleNo, route.routeTitle)}
+                className="btn btn-outline btn-sm"
+                style={{ borderColor: 'var(--gold-primary)', color: 'var(--primary-navy)' }}
+              >
+                <AlertCircle size={14} color="#d97706" />
+                {advisorySent === route.vehicleNo ? '✓ Delay Advisory Broadcasted' : 'Notify Parents of Traffic Delay'}
+              </button>
               <button className="btn btn-outline btn-sm" style={{ width: '100%' }}>
                 View Manifest &amp; Passenger List
               </button>

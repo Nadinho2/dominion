@@ -59,6 +59,45 @@ export default function AttendancePage() {
     recordAttendance(records);
     setSavedSuccess(true);
     setTimeout(() => setSavedSuccess(false), 3000);
+
+    // Dispatch automated safeguarding emails to parents for Absent or Late statuses
+    records.forEach((r) => {
+      const student = classStudents.find((s) => s.id === r.studentId);
+      if (!student || !student.guardianEmail) return;
+
+      if (r.status === 'Absent') {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'absence_alert',
+            payload: {
+              guardianEmail: student.guardianEmail,
+              guardianName: student.guardianName || 'Parent / Guardian',
+              studentName: `${student.firstName} ${student.lastName}`,
+              classLevel: student.classLevel,
+              date: selectedDate
+            }
+          })
+        }).catch((e) => console.warn('Absence safeguarding alert:', e));
+      } else if (r.status === 'Late') {
+        fetch('/api/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'late_arrival',
+            payload: {
+              guardianEmail: student.guardianEmail,
+              guardianName: student.guardianName || 'Parent / Guardian',
+              studentName: `${student.firstName} ${student.lastName}`,
+              classLevel: student.classLevel,
+              arrivalTime: '8:15 AM',
+              date: selectedDate
+            }
+          })
+        }).catch((e) => console.warn('Late arrival advisory:', e));
+      }
+    });
   };
 
   // Compute metrics

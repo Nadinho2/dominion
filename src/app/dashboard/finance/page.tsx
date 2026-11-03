@@ -38,7 +38,31 @@ export default function FinancePage() {
     e.preventDefault();
     if (!selectedInvoice || payAmount <= 0) return;
 
-    recordPayment(selectedInvoice.id, Number(payAmount));
+    const student = students.find((s) => s.id === selectedInvoice.studentId);
+    const amountNum = Number(payAmount);
+    const newBalance = Math.max(0, selectedInvoice.balance - amountNum);
+
+    recordPayment(selectedInvoice.id, amountNum);
+
+    // Dispatch official Bursary payment receipt email
+    if (student?.guardianEmail) {
+      fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'fee_receipt',
+          payload: {
+            guardianEmail: student.guardianEmail,
+            guardianName: student.guardianName || 'Parent / Guardian',
+            studentName: `${student.firstName} ${student.lastName}`,
+            invoiceNo: selectedInvoice.invoiceNo,
+            amountPaid: amountNum,
+            balanceRemaining: newBalance
+          }
+        })
+      }).catch((err) => console.warn('Payment receipt email dispatch notice:', err));
+    }
+
     setIsPayModalOpen(false);
     setSelectedInvoice(null);
   };

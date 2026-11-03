@@ -129,7 +129,7 @@ export interface Announcement {
   title: string;
   date: string;
   author: string;
-  category: 'Academic' | 'Sports' | 'Administrative' | 'Event';
+  category: 'Academic' | 'Sports' | 'Administrative' | 'Event' | 'Emergency';
   content: string;
   targetRole: 'All' | 'Teachers' | 'Parents' | 'Students';
 }

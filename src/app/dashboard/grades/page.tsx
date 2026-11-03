@@ -10,7 +10,8 @@ import {
   CheckCircle,
   FileText,
   Shield,
-  HelpCircle
+  HelpCircle,
+  Mail
 } from 'lucide-react';
 import { useSchoolStore } from '../../../lib/store';
 import { GradeRecord, Student } from '../../../lib/types';
@@ -20,6 +21,44 @@ export default function GradesPage() {
 
   const [selectedStudentForReport, setSelectedStudentForReport] = useState<Student | null>(null);
   const [isAddScoreOpen, setIsAddScoreOpen] = useState(false);
+  const [emailingDossier, setEmailingDossier] = useState(false);
+  const [emailDossierSent, setEmailDossierSent] = useState(false);
+
+  const handleEmailReportCard = async (student: Student) => {
+    if (!student.guardianEmail) {
+      alert('No guardian email address registered for this student.');
+      return;
+    }
+    const stGrades = getStudentGrades(student.id);
+    const avg = stGrades.length > 0
+      ? Math.round(stGrades.reduce((acc, g) => acc + g.total, 0) / stGrades.length)
+      : 82;
+
+    setEmailingDossier(true);
+    try {
+      await fetch('/api/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'report_card',
+          payload: {
+            guardianEmail: student.guardianEmail,
+            guardianName: student.guardianName || 'Parent / Guardian',
+            studentName: `${student.firstName} ${student.lastName}`,
+            term: '1st Term',
+            session: '2026/2027',
+            average: avg
+          }
+        })
+      });
+      setEmailDossierSent(true);
+      setTimeout(() => setEmailDossierSent(false), 4000);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setEmailingDossier(false);
+    }
+  };
 
   // Form State for new assessment
   const [studentId, setStudentId] = useState(students[0]?.id || '');
@@ -321,7 +360,16 @@ export default function GradesPage() {
                 <FileText size={20} color="var(--primary-navy)" />
                 <h3 style={{ fontSize: '1.125rem', fontWeight: 700 }}>Official Terminal Student Assessment Dossier</h3>
               </div>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                <button
+                  onClick={() => handleEmailReportCard(selectedStudentForReport)}
+                  disabled={emailingDossier}
+                  className="btn btn-outline"
+                  style={{ borderColor: 'var(--gold-primary)', color: 'var(--primary-navy)' }}
+                >
+                  <Mail size={16} />
+                  {emailDossierSent ? '✓ Dossier Sent!' : emailingDossier ? 'Dispatching...' : 'Email Report Card'}
+                </button>
                 <button onClick={() => window.print()} className="btn btn-primary">
                   <Printer size={16} /> Print / Save as PDF
                 </button>

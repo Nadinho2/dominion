@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClerkClient } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
+import { sendTeacherAppointmentEmail, sendPortalAccessWelcomeEmail } from '@/lib/resend';
 
 const secretKey = process.env.CLERK_SECRET_KEY;
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
@@ -79,6 +80,37 @@ export async function POST(req: NextRequest) {
           },
           { onConflict: 'email' }
         );
+      }
+    }
+
+    // 3. Dispatch automated onboarding email
+    if (email) {
+      try {
+        if (role === 'teacher') {
+          const staffCode = staffNo || `DIS/STF/${Math.floor(100 + Math.random() * 900)}`;
+          const subjectsList = Array.isArray(subjects)
+            ? subjects
+            : typeof subjects === 'string'
+            ? subjects.split(',').map((s: string) => s.trim()).filter(Boolean)
+            : ['Mathematics'];
+
+          await sendTeacherAppointmentEmail({
+            teacherEmail: email,
+            teacherName: name || 'Academic Staff',
+            staffNo: staffCode,
+            assignedClass: assignedClass || 'SSS 2',
+            assignedArm: assignedArm || 'Emerald',
+            subjects: subjectsList
+          });
+        } else {
+          await sendPortalAccessWelcomeEmail({
+            userEmail: email,
+            userName: name || 'Dominion Scholar / Parent',
+            role
+          });
+        }
+      } catch (emailErr) {
+        console.warn('Onboarding email dispatch non-blocking notice:', emailErr);
       }
     }
 
