@@ -50,11 +50,10 @@ export default function ParentView() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Parent Greeting Banner with Ward Switcher */}
       <div
+        className="portal-banner"
         style={{
           background: 'linear-gradient(135deg, var(--primary-navy) 0%, #1a365d 100%)',
           color: '#ffffff',
-          borderRadius: 'var(--radius-xl)',
-          padding: '2rem 2.5rem',
           boxShadow: 'var(--shadow-md)',
           border: '1px solid rgba(212, 154, 55, 0.2)'
         }}

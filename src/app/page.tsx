@@ -18,7 +18,9 @@ import {
   Clock,
   Sparkles,
   Calculator,
-  UserCheck
+  UserCheck,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function PublicHomePage() {
@@ -26,6 +28,7 @@ export default function PublicHomePage() {
   const [gradeLevel, setGradeLevel] = useState<'eyfs' | 'primary' | 'jss' | 'sss'>('primary');
   const [includeBus, setIncludeBus] = useState(true);
   const [includeLunch, setIncludeLunch] = useState(true);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const TUITION_RATES = {
     eyfs: 280000,
@@ -87,7 +90,7 @@ export default function PublicHomePage() {
             >
               Admissions Open 2026/2027
             </span>
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <span className="top-header-phone" style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
               <Phone size={13} color="var(--gold-primary)" /> +234 (0) 803 123 4567
             </span>
           </div>
@@ -111,7 +114,7 @@ export default function PublicHomePage() {
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
             <svg
               viewBox="0 0 100 100"
-              style={{ width: '48px', height: '48px' }}
+              style={{ width: '44px', height: '44px' }}
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
             >
@@ -146,17 +149,17 @@ export default function PublicHomePage() {
             </svg>
 
             <div>
-              <div style={{ fontSize: '1.25rem', fontWeight: 900, letterSpacing: '0.02em', lineHeight: 1.1 }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 900, letterSpacing: '0.02em', lineHeight: 1.1 }}>
                 Dominion <span style={{ color: 'var(--gold-light)' }}>Int&apos;l</span> School
               </div>
-              <div style={{ fontSize: '0.675rem', color: 'var(--gold-light)', fontStyle: 'italic', letterSpacing: '0.04em' }}>
+              <div style={{ fontSize: '0.65rem', color: 'var(--gold-light)', fontStyle: 'italic', letterSpacing: '0.04em' }}>
                 Dominion Through Excellence
               </div>
             </div>
           </Link>
 
-          {/* Navigation Links & SMS Portal CTA */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          {/* Desktop Navigation Links & SMS Portal CTA */}
+          <div className="desktop-header-nav" style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
             <nav style={{ display: 'flex', gap: '1.25rem', fontSize: '0.875rem', fontWeight: 600 }}>
               <a href="#about" style={{ color: '#cbd5e1' }}>About DIS</a>
               <a href="#academics" style={{ color: '#cbd5e1' }}>Academics</a>
@@ -168,7 +171,79 @@ export default function PublicHomePage() {
               <Shield size={16} /> Open Management Portal
             </Link>
           </div>
+
+          {/* Mobile Hamburger Button */}
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="mobile-landing-nav-toggle"
+            aria-label="Toggle navigation menu"
+            style={{
+              background: 'none',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#ffffff',
+              padding: '0.5rem',
+              borderRadius: 'var(--radius-sm)',
+              cursor: 'pointer'
+            }}
+          >
+            {mobileNavOpen ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileNavOpen && (
+          <div
+            className="mobile-landing-dropdown"
+            style={{
+              backgroundColor: 'var(--secondary-navy)',
+              borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+              padding: '1.25rem 1.5rem',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.75rem'
+            }}
+          >
+            <a
+              href="#about"
+              onClick={() => setMobileNavOpen(false)}
+              style={{ color: '#ffffff', fontWeight: 600, padding: '0.4rem 0', fontSize: '0.95rem' }}
+            >
+              About DIS
+            </a>
+            <a
+              href="#academics"
+              onClick={() => setMobileNavOpen(false)}
+              style={{ color: '#ffffff', fontWeight: 600, padding: '0.4rem 0', fontSize: '0.95rem' }}
+            >
+              Academics
+            </a>
+            <a
+              href="#sports"
+              onClick={() => setMobileNavOpen(false)}
+              style={{ color: '#ffffff', fontWeight: 600, padding: '0.4rem 0', fontSize: '0.95rem' }}
+            >
+              Sports &amp; Houses
+            </a>
+            <a
+              href="#fees"
+              onClick={() => setMobileNavOpen(false)}
+              style={{ color: '#ffffff', fontWeight: 600, padding: '0.4rem 0', fontSize: '0.95rem' }}
+            >
+              Fee Schedule
+            </a>
+
+            <div style={{ paddingTop: '0.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', marginTop: '0.25rem' }}>
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileNavOpen(false)}
+                className="btn btn-primary"
+                style={{ width: '100%', justifyContent: 'center' }}
+              >
+                <Shield size={16} /> Open Management Portal
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
@@ -176,12 +251,12 @@ export default function PublicHomePage() {
         style={{
           background: 'linear-gradient(135deg, #040b15 0%, var(--primary-navy) 50%, #0d213f 100%)',
           color: '#ffffff',
-          padding: '5rem 0',
+          padding: 'clamp(3rem, 6vw, 5rem) 0',
           position: 'relative',
           overflow: 'hidden'
         }}
       >
-        <div className="container" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: '3rem', alignItems: 'center' }}>
+        <div className="container hero-grid">
           <div>
             <div
               style={{
@@ -201,7 +276,7 @@ export default function PublicHomePage() {
               <Sparkles size={14} /> Premier Co-Educational Excellence in Ajao Estate, Lagos
             </div>
 
-            <h1 style={{ fontSize: '3rem', fontWeight: 900, lineHeight: 1.15, marginBottom: '1.25rem' }}>
+            <h1 className="hero-title">
               Raising Tomorrow&apos;s <span style={{ color: 'var(--gold-light)' }}>Global Leaders</span> &amp; Champions
             </h1>
 
@@ -223,7 +298,7 @@ export default function PublicHomePage() {
             </div>
 
             {/* Quick Metrics */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.5rem', marginTop: '3rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '1.5rem' }}>
+            <div className="hero-metrics-grid" style={{ marginTop: '2.5rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)', paddingTop: '1.5rem' }}>
               <div>
                 <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--gold-light)' }}>100%</div>
                 <div style={{ fontSize: '0.75rem', color: '#94a3b8' }}>WAEC &amp; Cambridge Pass Rate</div>
@@ -307,7 +382,7 @@ export default function PublicHomePage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-4 gap-6 house-grid">
             {/* Emerald */}
             <div className="card" style={{ borderTop: '4px solid var(--emerald)', textAlign: 'center' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'var(--emerald-bg)', color: 'var(--emerald)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
@@ -376,12 +451,12 @@ export default function PublicHomePage() {
             </p>
           </div>
 
-          <div className="card" style={{ padding: '2.5rem' }}>
+          <div className="card" style={{ padding: 'clamp(1.25rem, 3.5vw, 2.5rem)' }}>
             <div style={{ marginBottom: '1.5rem' }}>
               <label className="form-label" style={{ fontSize: '0.9rem', marginBottom: '0.5rem' }}>
                 Academic Section
               </label>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.75rem' }}>
+              <div className="fee-tier-buttons">
                 {(['eyfs', 'primary', 'jss', 'sss'] as const).map((lvl) => (
                   <button
                     key={lvl}
@@ -405,7 +480,7 @@ export default function PublicHomePage() {
             </div>
 
             {/* Optional Services Toggles */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+            <div className="fee-options-grid" style={{ marginBottom: '2rem' }}>
               <label
                 style={{
                   display: 'flex',

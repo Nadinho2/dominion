@@ -231,11 +231,10 @@ export default function AdminView() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Executive Welcome Banner */}
       <div
+        className="portal-banner"
         style={{
           background: 'linear-gradient(135deg, var(--primary-navy) 0%, #0f274a 100%)',
           color: '#ffffff',
-          borderRadius: 'var(--radius-xl)',
-          padding: '2rem 2.5rem',
           position: 'relative',
           overflow: 'hidden',
           boxShadow: 'var(--shadow-md)',
@@ -416,10 +415,11 @@ export default function AdminView() {
         </div>
       </div>
 
-      {/* Operations Navigation Tabs */}
-      <div style={{ display: 'flex', borderBottom: '2px solid #e2e8f0', gap: '1.5rem' }}>
+      {/* Operations Navigation Tabs (Horizontal swipeable on mobile) */}
+      <div className="nav-tabs-scroll">
         <button
           onClick={() => setActiveTab('admissions')}
+          className="nav-tab-item"
           style={{
             padding: '0.75rem 0.25rem',
             border: 'none',
@@ -435,6 +435,7 @@ export default function AdminView() {
         </button>
         <button
           onClick={() => setActiveTab('teachers')}
+          className="nav-tab-item"
           style={{
             padding: '0.75rem 0.25rem',
             border: 'none',
@@ -450,6 +451,7 @@ export default function AdminView() {
         </button>
         <button
           onClick={() => setActiveTab('transport')}
+          className="nav-tab-item"
           style={{
             padding: '0.75rem 0.25rem',
             border: 'none',
@@ -465,6 +467,7 @@ export default function AdminView() {
         </button>
         <button
           onClick={() => setActiveTab('curriculum')}
+          className="nav-tab-item"
           style={{
             padding: '0.75rem 0.25rem',
             border: 'none',
@@ -480,6 +483,7 @@ export default function AdminView() {
         </button>
         <button
           onClick={() => setActiveTab('fees')}
+          className="nav-tab-item"
           style={{
             padding: '0.75rem 0.25rem',
             border: 'none',

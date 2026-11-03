@@ -327,6 +327,232 @@ button {
 }
 
 /* ==========================================================================
+   Mobile Responsive Navigation & Layout Shell
+   ========================================================================== */
+.sidebar-container {
+  width: 260px;
+  background-color: var(--primary-navy);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sidebar-close-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: var(--radius-sm);
+  margin-left: auto;
+}
+
+.sidebar-close-btn:hover {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.mobile-menu-btn {
+  display: none;
+  background: none;
+  border: 1px solid var(--border-color);
+  color: var(--primary-navy);
+  padding: 0.45rem 0.6rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(6, 18, 36, 0.65);
+  backdrop-filter: blur(4px);
+  z-index: 990;
+  animation: fadeIn 0.2s ease;
+}
+
+.main-content-container {
+  flex: 1;
+  padding: 2rem;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.top-nav-header {
+  height: 64px;
+  background-color: #ffffff;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.portal-banner {
+  padding: clamp(1.25rem, 3.5vw, 2.5rem) !important;
+  border-radius: var(--radius-xl);
+}
+
+/* Horizontal Scrolling Tab Bar for Operations */
+.nav-tabs-scroll {
+  display: flex;
+  border-bottom: 2px solid #e2e8f0;
+  gap: 1.5rem;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+
+.nav-tabs-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-tab-item {
+  flex-shrink: 0;
+}
+
+/* Public Homepage Responsive Utilities */
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.hero-title {
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 1.25rem;
+}
+
+.hero-metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.fee-tier-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+}
+
+.fee-options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* Responsive Breakpoints for Tablet & Mobile (<= 1024px) */
+@media (max-width: 1024px) {
+  .sidebar-container {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    height: 100vh;
+    z-index: 1000 !important;
+    transform: translateX(-100%);
+    box-shadow: 10px 0 35px rgba(0, 0, 0, 0.45);
+  }
+
+  .sidebar-container.open {
+    transform: translateX(0);
+  }
+
+  .sidebar-close-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-menu-btn {
+    display: inline-flex;
+  }
+
+  .main-content-container {
+    padding: 1.25rem 1rem !important;
+  }
+
+  .top-nav-header {
+    padding: 0 1rem !important;
+  }
+
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 2.5rem !important;
+  }
+}
+
+/* Mobile Devices (<= 640px) */
+@media (max-width: 640px) {
+  .main-content-container {
+    padding: 1rem 0.75rem !important;
+  }
+
+  .campus-label {
+    display: none !important;
+  }
+
+  .top-header-phone {
+    display: none !important;
+  }
+
+  .hero-metrics-grid {
+    gap: 0.75rem !important;
+  }
+
+  .fee-tier-buttons {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .fee-options-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-content {
+    padding: 1.25rem 1rem !important;
+    border-radius: var(--radius-lg) !important;
+    max-height: 94vh !important;
+  }
+
+  .card {
+    padding: 1.15rem 1rem !important;
+  }
+
+  .stat-card {
+    padding: 1rem !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ==========================================================================
    Print Styles for Official Report Cards
    ========================================================================== */
 @media print {

@@ -4,9 +4,13 @@ import React, { useEffect } from 'react';
 import { UserRole } from '../lib/types';
 import { useSchoolStore } from '../lib/store';
 import { useUser, UserButton } from '@clerk/nextjs';
-import { BellRing, Sparkles, ShieldCheck } from 'lucide-react';
+import { BellRing, Sparkles, ShieldCheck, Menu } from 'lucide-react';
 
-export default function TopNav() {
+interface TopNavProps {
+  onToggleMenu?: () => void;
+}
+
+export default function TopNav({ onToggleMenu }: TopNavProps) {
   const { role, changeRole } = useSchoolStore();
   const { user, isLoaded } = useUser();
 
@@ -28,42 +32,40 @@ export default function TopNav() {
   const displayEmail = user?.primaryEmailAddress?.emailAddress || '';
 
   return (
-    <header
-      style={{
-        height: '64px',
-        backgroundColor: '#ffffff',
-        borderBottom: '1px solid var(--border-color)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 2rem',
-        position: 'sticky',
-        top: 0,
-        zIndex: 40
-      }}
-      className="no-print"
-    >
-      {/* Left Academic Session Badge */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <div
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            padding: '0.35rem 0.75rem',
-            borderRadius: '9999px',
-            backgroundColor: 'var(--gold-badge)',
-            border: '1px solid var(--gold-border)',
-            fontSize: '0.75rem',
-            fontWeight: 700,
-            color: '#854d0e'
-          }}
-        >
-          <Sparkles size={14} color="#d97706" />
-          <span>2026/2027 Academic Session &bull; 1st Term</span>
-        </div>
-        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          Ajao Estate Campus, Lagos
+    <header className="top-nav-header no-print">
+      {/* Left Academic Session Badge & Mobile Hamburger */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {onToggleMenu && (
+          <button
+            onClick={onToggleMenu}
+            className="mobile-menu-btn"
+            aria-label="Toggle Navigation Menu"
+          >
+            <Menu size={20} />
+          </button>
+        )}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.3rem 0.65rem',
+              borderRadius: '9999px',
+              backgroundColor: 'var(--gold-badge)',
+              border: '1px solid var(--gold-border)',
+              fontSize: '0.725rem',
+              fontWeight: 700,
+              color: '#854d0e'
+            }}
+          >
+            <Sparkles size={13} color="#d97706" />
+            <span>2026/2027 &bull; 1st Term</span>
+          </div>
+          <div className="campus-label" style={{ fontSize: '0.725rem', color: 'var(--text-muted)' }}>
+            Ajao Estate Campus
+          </div>
         </div>
       </div>
 

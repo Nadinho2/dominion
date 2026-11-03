@@ -105,11 +105,10 @@ export default function TeacherView() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Teacher Profile & Greeting Banner */}
       <div
+        className="portal-banner"
         style={{
           background: 'linear-gradient(135deg, var(--primary-navy) 0%, #173868 100%)',
           color: '#ffffff',
-          borderRadius: 'var(--radius-xl)',
-          padding: '2rem 2.5rem',
           boxShadow: 'var(--shadow-md)',
           border: '1px solid rgba(212, 154, 55, 0.2)'
         }}

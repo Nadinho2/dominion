@@ -209,7 +209,7 @@ export default function AdmissionsPage() {
             </div>
           </div>
         ) : (
-          <div className="card" style={{ padding: '2.5rem' }}>
+          <div className="card" style={{ padding: 'clamp(1.25rem, 3.5vw, 2.5rem)' }}>
             <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
               <span
                 style={{

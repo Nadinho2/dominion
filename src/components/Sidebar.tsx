@@ -13,7 +13,8 @@ import {
   Bus,
   Bell,
   Globe,
-  ShieldCheck
+  ShieldCheck,
+  X
 } from 'lucide-react';
 import { useSchoolStore } from '../lib/store';
 
@@ -31,7 +32,12 @@ const ALL_NAV_ITEMS = [
   { name: 'Announcements', href: '/dashboard/announcements', icon: Bell, roles: ['admin', 'teacher', 'parent', 'student'] }
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { role } = useSchoolStore();
 
@@ -39,24 +45,12 @@ export default function Sidebar() {
 
   return (
     <aside
-      style={{
-        width: '260px',
-        backgroundColor: 'var(--primary-navy)',
-        color: '#ffffff',
-        display: 'flex',
-        flexDirection: 'column',
-        borderRight: '1px solid rgba(255, 255, 255, 0.08)',
-        minHeight: '100vh',
-        position: 'sticky',
-        top: 0,
-        zIndex: 50
-      }}
-      className="no-print"
+      className={`sidebar-container no-print ${isOpen ? 'open' : ''}`}
     >
       {/* Brand Header */}
       <div
         style={{
-          padding: '1.5rem',
+          padding: '1.25rem 1.5rem',
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
           display: 'flex',
           alignItems: 'center',
@@ -65,7 +59,7 @@ export default function Sidebar() {
       >
         <svg
           viewBox="0 0 100 100"
-          style={{ width: '42px', height: '42px', flexShrink: 0 }}
+          style={{ width: '40px', height: '40px', flexShrink: 0 }}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >
@@ -100,19 +94,29 @@ export default function Sidebar() {
         </svg>
 
         <div>
-          <div style={{ fontWeight: 800, fontSize: '1rem', letterSpacing: '0.02em', color: '#ffffff' }}>
+          <div style={{ fontWeight: 800, fontSize: '0.95rem', letterSpacing: '0.02em', color: '#ffffff' }}>
             Dominion <span style={{ color: 'var(--gold-light)' }}>SMS</span>
           </div>
-          <div style={{ fontSize: '0.675rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: '0.625rem', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Excellence &amp; Leadership
           </div>
         </div>
+
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="sidebar-close-btn"
+            aria-label="Close navigation"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
 
       {/* Role Pill Banner */}
       <div
         style={{
-          margin: '1rem 1.25rem 0.5rem',
+          margin: '0.85rem 1.25rem 0.35rem',
           padding: '0.5rem 0.75rem',
           borderRadius: 'var(--radius-md)',
           backgroundColor: 'rgba(212, 154, 55, 0.12)',
@@ -132,7 +136,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation Links */}
-      <nav style={{ padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
+      <nav style={{ padding: '0.75rem 1rem', display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1, overflowY: 'auto' }}>
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -141,6 +145,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={onClose}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -165,12 +170,13 @@ export default function Sidebar() {
       {/* Public Portal Switcher */}
       <div
         style={{
-          padding: '1.25rem',
+          padding: '1rem',
           borderTop: '1px solid rgba(255, 255, 255, 0.08)'
         }}
       >
         <Link
           href="/"
+          onClick={onClose}
           style={{
             display: 'flex',
             alignItems: 'center',

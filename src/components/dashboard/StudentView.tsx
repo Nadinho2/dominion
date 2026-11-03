@@ -46,6 +46,7 @@ export default function StudentView() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       {/* Student House Crest Greeting Banner */}
       <div
+        className="portal-banner"
         style={{
           background:
             activeStudent?.house === 'Emerald'
@@ -56,8 +57,6 @@ export default function StudentView() {
               ? 'linear-gradient(135deg, #881337 0%, #4c0519 100%)'
               : 'linear-gradient(135deg, #78350f 0%, #451a03 100%)',
           color: '#ffffff',
-          borderRadius: 'var(--radius-xl)',
-          padding: '2rem 2.5rem',
           boxShadow: 'var(--shadow-md)',
           border: '1px solid rgba(255, 255, 255, 0.2)',
           position: 'relative'
