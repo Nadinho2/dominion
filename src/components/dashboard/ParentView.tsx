@@ -17,7 +17,12 @@ import {
   ShieldCheck,
   FileText,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  Globe,
+  Building,
+  Copy,
+  Check,
+  ExternalLink
 } from 'lucide-react';
 import { useSchoolStore } from '../../lib/store';
 import { Student } from '../../lib/types';
@@ -30,6 +35,8 @@ export default function ParentView() {
   // Find enrolled students for ward switching
   const enrolledStudents = students.filter((s) => s.admissionStatus === 'Enrolled' || s.status === 'Active');
   const [selectedWardId, setSelectedWardId] = useState<string>(enrolledStudents[0]?.id || '');
+  const [isBachsPaying, setIsBachsPaying] = useState(false);
+  const [copiedAccount, setCopiedAccount] = useState(false);
 
   const selectedWard = enrolledStudents.find((s) => s.id === selectedWardId) || enrolledStudents[0];
   const parentName = user?.fullName || user?.firstName || selectedWard?.guardianName || 'Parent / Guardian';
@@ -38,13 +45,53 @@ export default function ParentView() {
   const formTutor = teachers.find((t) => t.id === selectedWard?.assignedTeacherId);
 
   // Ward's Grades
-  const wardGrades = selectedWard ? grades.filter((g) => g.studentId === selectedWard.id) : [];
-
-  // Ward's Fee Invoice
-  const wardFee = selectedWard ? fees.find((f) => f.studentId === selectedWard.id) : undefined;
+  const wardGrades = grades.filter((g) => g.studentId === selectedWard?.id);
 
   // Ward's Bus Route
-  const wardBus = selectedWard ? busRoutes.find((b) => b.id === selectedWard.busRouteId) : undefined;
+  const wardBus = busRoutes.find((b) => b.id === selectedWard?.busRouteId);
+
+  // Ward's Fees
+  const wardFee = selectedWard ? fees.find((f) => f.studentId === selectedWard.id) : undefined;
+
+  const handlePayOnlineWithBachs = async () => {
+    if (!wardFee || wardFee.balance <= 0) return;
+    setIsBachsPaying(true);
+
+    try {
+      const res = await fetch('/api/payments/bachs/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          invoiceId: wardFee.id,
+          invoiceNo: wardFee.invoiceNo,
+          studentName: `${selectedWard?.firstName} ${selectedWard?.lastName}`,
+          admissionNo: selectedWard?.admissionNo,
+          guardianEmail: selectedWard?.guardianEmail || user?.primaryEmailAddress?.emailAddress || 'nnamdiamuchie@gmail.com',
+          guardianName: parentName,
+          amount: wardFee.balance,
+          currency: 'NGN'
+        })
+      });
+
+      const data = await res.json();
+      if (data.checkoutUrl) {
+        window.open(data.checkoutUrl, '_blank');
+      } else {
+        alert(data.error || 'Failed to start Bachs.io checkout session.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Unable to connect to Bachs.io payment gateway.');
+    } finally {
+      setIsBachsPaying(false);
+    }
+  };
+
+  const copyBankNo = () => {
+    navigator.clipboard.writeText('1015894321');
+    setCopiedAccount(true);
+    setTimeout(() => setCopiedAccount(false), 3000);
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
@@ -231,7 +278,7 @@ export default function ParentView() {
           <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' }}>
             Total Invoiced: &#8358;{wardFee?.totalAmount.toLocaleString()} &bull; Paid: &#8358;{wardFee?.paidAmount.toLocaleString()}
           </div>
-          <div style={{ marginTop: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.75rem', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span
               style={{
                 fontSize: '0.75rem',
@@ -244,6 +291,19 @@ export default function ParentView() {
             >
               Status: {wardFee?.status}
             </span>
+
+            {wardFee && wardFee.balance > 0 && (
+              <button
+                type="button"
+                onClick={handlePayOnlineWithBachs}
+                disabled={isBachsPaying}
+                className="btn btn-primary btn-sm"
+                style={{ fontSize: '0.75rem', padding: '4px 10px', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <Globe size={13} />
+                {isBachsPaying ? 'Opening...' : 'Pay with Bachs.io'}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -324,34 +384,62 @@ export default function ParentView() {
       <div className="card" style={{ border: '2px solid var(--gold-primary)', backgroundColor: '#fffdfa' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
           <div>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary-navy)' }}>
-              Official Dominion International School Fee Payment Details
-            </h3>
-            <p style={{ fontSize: '0.85rem', color: '#64748b', marginTop: '0.25rem' }}>
-              Pay directly via electronic transfer or bank teller. Reference your child&apos;s Admission Number (<strong>{selectedWard?.admissionNo}</strong>) on the payment narrative.
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+              <Building size={18} color="#059669" />
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--primary-navy)', margin: 0 }}>
+                Official School Fee Payment Account (Zenith Bank)
+              </h3>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>
+              Parents paying offline can transfer directly or pay via bank teller. Always quote your ward&apos;s Admission Number (<strong>{selectedWard?.admissionNo}</strong>) as the transaction narration.
             </p>
           </div>
-          <Link href="/dashboard/finance" className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
-            View Full Invoice &amp; Payment History <ArrowRight size={14} />
-          </Link>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {wardFee && wardFee.balance > 0 && (
+              <button
+                type="button"
+                onClick={handlePayOnlineWithBachs}
+                disabled={isBachsPaying}
+                className="btn btn-primary"
+                style={{ fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}
+              >
+                <Globe size={14} />
+                {isBachsPaying ? 'Opening Bachs...' : `Pay Online with Bachs.io (₦${wardFee.balance.toLocaleString()})`}
+              </button>
+            )}
+            <Link href="/dashboard/finance" className="btn btn-outline" style={{ fontSize: '0.8rem' }}>
+              View Bursary Ledger <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', marginTop: '1.25rem' }}>
           <div style={{ padding: '0.75rem 1rem', backgroundColor: '#ffffff', borderRadius: 'var(--radius-sm)', border: '1px solid #e2e8f0' }}>
             <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Bank Name</span>
-            <div style={{ fontWeight: 800, color: 'var(--primary-navy)' }}>Guaranty Trust Bank (GTBank)</div>
+            <div style={{ fontWeight: 800, color: 'var(--primary-navy)' }}>Zenith Bank Plc</div>
           </div>
           <div style={{ padding: '0.75rem 1rem', backgroundColor: '#ffffff', borderRadius: 'var(--radius-sm)', border: '1px solid #e2e8f0' }}>
             <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Account Name</span>
-            <div style={{ fontWeight: 800, color: 'var(--primary-navy)' }}>Dominion Int&apos;l School Ltd</div>
+            <div style={{ fontWeight: 800, color: 'var(--primary-navy)' }}>Dominion International School</div>
+          </div>
+          <div style={{ padding: '0.75rem 1rem', backgroundColor: '#ffffff', borderRadius: 'var(--radius-sm)', border: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>
+              <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>NUBAN Account No</span>
+              <div style={{ fontWeight: 900, color: 'var(--gold-dark)', fontSize: '1.15rem', letterSpacing: '0.05em' }}>1015894321</div>
+            </div>
+            <button
+              type="button"
+              onClick={copyBankNo}
+              className="btn btn-outline btn-sm"
+              style={{ fontSize: '0.7rem', padding: '3px 8px' }}
+            >
+              {copiedAccount ? <Check size={12} color="#059669" /> : <Copy size={12} />}
+              {copiedAccount ? 'Copied' : 'Copy'}
+            </button>
           </div>
           <div style={{ padding: '0.75rem 1rem', backgroundColor: '#ffffff', borderRadius: 'var(--radius-sm)', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>NUBAN Account No</span>
-            <div style={{ fontWeight: 900, color: 'var(--gold-dark)', fontSize: '1.1rem' }}>0124892019</div>
-          </div>
-          <div style={{ padding: '0.75rem 1rem', backgroundColor: '#ffffff', borderRadius: 'var(--radius-sm)', border: '1px solid #e2e8f0' }}>
-            <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Payment Reference</span>
-            <div style={{ fontWeight: 800, color: '#1e293b' }}>{selectedWard?.admissionNo}</div>
+            <span style={{ fontSize: '0.7rem', color: '#64748b', textTransform: 'uppercase', fontWeight: 700 }}>Mandatory Narration</span>
+            <div style={{ fontWeight: 800, color: '#065f46' }}>{selectedWard?.admissionNo}</div>
           </div>
         </div>
       </div>

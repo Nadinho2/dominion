@@ -9,6 +9,8 @@ const isPublicRoute = createRouteMatcher([
   '/sign-up(.*)',
   '/admissions(.*)',
   '/api/send-email(.*)',
+  '/api/payments(.*)',
+  '/favicon-preview(.*)'
 ]);
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
