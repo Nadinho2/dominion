@@ -222,11 +222,25 @@ export function useSchoolStore() {
     return student;
   };
 
-  const updateStudent = (id: string, updates: Partial<Student>) => {
+  const updateStudent = async (id: string, updates: Partial<Student>) => {
     const updated = students.map((s) => (s.id === id ? { ...s, ...updates } : s));
     setStudents(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(updated));
+    }
+
+    try {
+      await fetch('/api/students/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: id,
+          action: 'update',
+          updates
+        })
+      });
+    } catch (e) {
+      console.warn('API updateStudent warning:', e);
     }
   };
 
@@ -366,19 +380,20 @@ export function useSchoolStore() {
     }
 
     const supabase = createClient();
-    if (supabase) {
-      try {
-        await supabase
-          .from('students')
-          .update({
-            assigned_teacher_id: teacherId,
-            arm: classArm,
-            class_level: classLevel
-          })
-          .eq('id', studentId);
-      } catch (e) {
-        console.warn('Supabase claimStudent warning:', e);
-      }
+    try {
+      await fetch('/api/students/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId,
+          action: 'claim',
+          teacherId,
+          arm: classArm,
+          classLevel
+        })
+      });
+    } catch (e) {
+      console.warn('API claimStudent warning:', e);
     }
   };
 
@@ -401,20 +416,17 @@ export function useSchoolStore() {
       localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(updated));
     }
 
-    const supabase = createClient();
-    if (supabase) {
-      try {
-        await supabase
-          .from('students')
-          .update({
-            assigned_teacher_id: null,
-            arm: 'Unassigned',
-            admission_status: 'Ready for Class'
-          })
-          .eq('id', studentId);
-      } catch (e) {
-        console.warn('Supabase releaseStudent warning:', e);
-      }
+    try {
+      await fetch('/api/students/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId,
+          action: 'release'
+        })
+      });
+    } catch (e) {
+      console.warn('API releaseStudent warning:', e);
     }
   };
 
@@ -444,19 +456,20 @@ export function useSchoolStore() {
       localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(updated));
     }
 
-    const supabase = createClient();
-    if (supabase) {
-      try {
-        await supabase
-          .from('students')
-          .update({
-            house,
-            admission_no: finalAdmissionNo
-          })
-          .eq('id', studentId);
-      } catch (e) {
-        console.warn('Supabase assignHouse warning:', e);
-      }
+    // Persist to Supabase via server route with service role key
+    try {
+      await fetch('/api/students/update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId,
+          action: 'approve',
+          house,
+          admissionNo: finalAdmissionNo
+        })
+      });
+    } catch (e) {
+      console.warn('API assignHouse warning:', e);
     }
 
     // Dispatch Official Admission & House Induction Email

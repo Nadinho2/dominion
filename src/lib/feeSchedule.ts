@@ -244,3 +244,4 @@ export function getFeeScheduleForClass(classLevel: string, hasBus: boolean = fal
     }
   ];
 }
+
