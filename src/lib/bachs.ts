@@ -46,19 +46,27 @@ export async function createBachsCheckoutSession({
     !BACHS_API_KEY.includes('your_bachs_api_key_here') &&
     BACHS_API_KEY.startsWith('sk_');
 
-  const defaultSuccessUrl =
+  // Bachs requires publicly accessible URLs and strictly rejects 'localhost'
+  let safeSuccessUrl =
     successUrl ||
     process.env.NEXT_PUBLIC_BACHS_SUCCESS_URL ||
-    'http://localhost:3000/dashboard/finance?payment=success';
-  const defaultCancelUrl =
+    'https://www.firstsons.xyz/dashboard/finance?payment=success';
+  if (safeSuccessUrl.includes('localhost')) {
+    safeSuccessUrl = 'https://www.firstsons.xyz/dashboard/finance?payment=success';
+  }
+
+  let safeCancelUrl =
     cancelUrl ||
     process.env.NEXT_PUBLIC_BACHS_CANCEL_URL ||
-    'http://localhost:3000/dashboard/finance?payment=cancelled';
+    'https://www.firstsons.xyz/dashboard/finance?payment=cancelled';
+  if (safeCancelUrl.includes('localhost')) {
+    safeCancelUrl = 'https://www.firstsons.xyz/dashboard/finance?payment=cancelled';
+  }
 
   // If key is not yet configured or in mock/test mode, provide a simulated checkout response
   if (!isConfiguredKey) {
     const mockSessionId = `cs_sim_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-    const mockCheckoutUrl = `${defaultSuccessUrl}&session_id=${mockSessionId}&invoice_no=${encodeURIComponent(
+    const mockCheckoutUrl = `${safeSuccessUrl}&session_id=${mockSessionId}&invoice_no=${encodeURIComponent(
       invoiceNo
     )}&amount=${amount}&mock=true`;
 
@@ -81,13 +89,12 @@ export async function createBachsCheckoutSession({
       Accept: 'application/json'
     };
 
-    if (BACHS_ACCOUNT_ID) {
-      headers['X-Account-Id'] = BACHS_ACCOUNT_ID;
-    }
+    // Format amount as two-decimal string as strictly required by Bachs schema ("10000.00")
+    const formattedAmount = Number(amount).toFixed(2);
 
     const payload = {
       pricing: {
-        amount: Math.round(amount),
+        amount: formattedAmount,
         currency: currency.toUpperCase()
       },
       customer: {
@@ -101,8 +108,8 @@ export async function createBachsCheckoutSession({
         admissionNo: admissionNo || '',
         institution: 'Dominion International School'
       },
-      success_url: `${defaultSuccessUrl}&session_id={CHECKOUT_SESSION_ID}&invoice_no=${encodeURIComponent(invoiceNo)}`,
-      cancel_url: `${defaultCancelUrl}&invoice_no=${encodeURIComponent(invoiceNo)}`
+      success_url: `${safeSuccessUrl}&session_id={CHECKOUT_SESSION_ID}&invoice_no=${encodeURIComponent(invoiceNo)}`,
+      cancel_url: `${safeCancelUrl}&invoice_no=${encodeURIComponent(invoiceNo)}`
     };
 
     const res = await fetch(`${BACHS_API_BASE_URL}/v1/checkout-sessions`, {
@@ -114,36 +121,26 @@ export async function createBachsCheckoutSession({
     const data = await res.json();
 
     if (!res.ok) {
-      console.warn(`[Bachs API Error ${res.status}]`, data);
-      // Fallback gracefully for local developer sandbox
-      const fallbackSessionId = `cs_fallback_${Date.now()}`;
+      console.error(`[Bachs API Error ${res.status}]`, data);
       return {
-        success: true,
-        checkoutUrl: `${defaultSuccessUrl}&session_id=${fallbackSessionId}&invoice_no=${encodeURIComponent(
-          invoiceNo
-        )}&amount=${amount}&fallback=true`,
-        sessionId: fallbackSessionId,
-        isMock: true
+        success: false,
+        error: data.detail || data.message || `Bachs Gateway Error: ${res.statusText}`
       };
     }
+
+    console.log(`[Bachs Success] Created live checkout session on Bachs.io:`, data.checkout_id, data.checkout_url);
 
     return {
       success: true,
       checkoutUrl: data.checkout_url || data.url,
-      sessionId: data.id || data.session_id,
+      sessionId: data.checkout_id || data.id || data.session_id,
       isMock: false
     };
   } catch (err: any) {
     console.error('[Bachs Connection Error]', err);
-    // Provide resilient fallback URL so the checkout test flow never terminates unexpectedly
-    const fallbackSessionId = `cs_net_fallback_${Date.now()}`;
     return {
-      success: true,
-      checkoutUrl: `${defaultSuccessUrl}&session_id=${fallbackSessionId}&invoice_no=${encodeURIComponent(
-        invoiceNo
-      )}&amount=${amount}&fallback=true`,
-      sessionId: fallbackSessionId,
-      isMock: true
+      success: false,
+      error: err.message || 'Unable to establish connection with Bachs.io API'
     };
   }
 }
