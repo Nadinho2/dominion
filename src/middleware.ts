@@ -10,6 +10,7 @@ const isPublicRoute = createRouteMatcher([
   '/admissions(.*)',
   '/api/send-email(.*)',
   '/api/payments(.*)',
+  '/api/admissions(.*)',
   '/favicon-preview(.*)'
 ]);
 
@@ -31,15 +32,18 @@ const middlewareHandler = hasClerkKey
         return authObj.redirectToSignIn({ returnBackUrl: request.url });
       }
 
-      // 3. Resolve role from Clerk session claims (New signups strictly default to 'parent', never 'admin')
+      // 3. Resolve role from Clerk session claims (publicMetadata.role in Clerk JWT)
       const claims = authObj.sessionClaims as any;
-      const isSuperAdminEmail =
+      const isSuperAdmin =
+        claims?.sub === 'user_3LNk9Ckf9uTr9dvmAKl5xV1Ag9w' ||
         claims?.email === 'nnamdiamuchie@gmail.com' ||
         claims?.primaryEmailAddress === 'nnamdiamuchie@gmail.com';
+
       const userRole: string =
+        claims?.publicMetadata?.role ||
         claims?.metadata?.role ||
         claims?.role ||
-        (isSuperAdminEmail ? 'admin' : 'parent');
+        (isSuperAdmin ? 'admin' : 'parent');
 
       // 4. Role-based Route Protection
       if (isAdminRoute(request) && userRole !== 'admin') {

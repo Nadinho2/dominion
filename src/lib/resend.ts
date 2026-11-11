@@ -27,8 +27,25 @@ async function dispatchResendEmail(
     const { data, error } = await resend.emails.send(sendParams);
     if (error) {
       console.warn(`[Resend Notice] ${error.message} (${logLabel} -> ${sendParams.to.join(', ')})`);
-      // Graceful fallback for unverified domains / test sandboxes
-      return { success: true, messageId: `fallback-dev-${Date.now()}` };
+      
+      // If Resend sandbox restricts recipient to registered developer email, auto-forward so tester receives it
+      if (error.message?.includes('only send testing emails to your own email address')) {
+        const match = error.message.match(/\(([^)]+)\)/);
+        const devEmail = match ? match[1] : 'ikechukwumargaret1@gmail.com';
+        const retryRes = await resend.emails.send({
+          from: sendParams.from,
+          to: [devEmail],
+          subject: `[Dev Forward • Target: ${sendParams.to.join(', ')}] ${sendParams.subject}`,
+          html: `<div style="background:#fef3c7;border:1px solid #f59e0b;padding:12px;border-radius:6px;margin-bottom:16px;font-family:sans-serif;font-size:12px;"><strong>Resend Sandbox Notice:</strong> This message was destined for <code>${sendParams.to.join(', ')}</code>, but was forwarded to your registered test address <code>${devEmail}</code>. Verify your domain at <a href="https://resend.com/domains">resend.com/domains</a> to send directly to all recipients.</div>${sendParams.html}`
+        });
+
+        if (!retryRes.error) {
+          console.log(`[Resend Delivered via Sandbox Forward] ${logLabel} -> forwarded to ${devEmail}`);
+          return { success: true, messageId: retryRes.data?.id };
+        }
+      }
+
+      return { success: false, error: error.message };
     }
     return { success: true, messageId: data?.id };
   } catch (err: any) {
@@ -174,7 +191,7 @@ export async function sendApplicationAcknowledgedEmail({
     ctaButton: { label: 'Track Admission Status', url: 'http://localhost:3000/dashboard' }
   });
 
-  return dispatchResendEmail(
+  const guardianResult = await dispatchResendEmail(
     {
       from: `Dominion Admissions <${FROM_EMAIL}>`,
       to: [guardianEmail],
@@ -183,6 +200,43 @@ export async function sendApplicationAcknowledgedEmail({
     },
     `Application Acknowledged (${applicationRef})`
   );
+
+  // Administrative Alert: Notify School Admin & Admissions Directorate
+  const adminHtml = createEmailTemplate({
+    headerTitle: 'New Student Admission Application',
+    headerSubtitle: 'Admissions & Records Directorate',
+    badgeText: 'Action Required: Assign House & Class',
+    badgeColor: '#b45309',
+    badgeBg: '#fef3c7',
+    recipientName: 'Nadinho Nnamdi (SuperAdmin)',
+    contentHtml: `
+      <p>A new student digital admission application has been registered online.</p>
+      <div style="background-color: #f8fafc; border-left: 4px solid #d49a37; border-radius: 4px; padding: 16px; margin: 18px 0;">
+        <table width="100%" cellpadding="4" style="font-size: 13px;">
+          <tr><td><strong>Student Name:</strong></td><td><strong>${studentName}</strong></td></tr>
+          <tr><td><strong>Application Reference:</strong></td><td><code>${applicationRef}</code></td></tr>
+          <tr><td><strong>Intended Class:</strong></td><td>${classLevel}</td></tr>
+          <tr><td><strong>Guardian Name:</strong></td><td>${guardianName}</td></tr>
+          <tr><td><strong>Guardian Email:</strong></td><td>${guardianEmail}</td></tr>
+          <tr><td><strong>Received At:</strong></td><td>${new Date().toLocaleString('en-NG')}</td></tr>
+        </table>
+      </div>
+      <p>Please log in to the Admin Command Desk to review the dossier, approve the final admission number, and allocate a student House.</p>
+    `,
+    ctaButton: { label: 'Open Admin Allocation Desk', url: 'http://localhost:3000/admin' }
+  });
+
+  dispatchResendEmail(
+    {
+      from: `Dominion Admissions <${FROM_EMAIL}>`,
+      to: ['nnamdiamuchie@gmail.com'],
+      subject: `[New Student Application] ${studentName} (${classLevel}) - Ref: ${applicationRef}`,
+      html: adminHtml
+    },
+    `Admin Application Alert (${applicationRef})`
+  ).catch((e) => console.warn('Admin application notification warning:', e));
+
+  return guardianResult;
 }
 
 /**

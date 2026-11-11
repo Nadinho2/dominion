@@ -50,6 +50,11 @@ export function setStoredRole(role: UserRole) {
 
 // Convert Supabase snake_case student to camelCase
 function mapDbStudent(db: any): Student {
+  const isPending = Boolean(
+    db.admission_no?.includes('PEND') ||
+    db.admission_status === 'Pending Review'
+  );
+
   return {
     id: db.id,
     admissionNo: db.admission_no,
@@ -58,15 +63,17 @@ function mapDbStudent(db: any): Student {
     gender: db.gender,
     dob: db.dob,
     classLevel: db.class_level,
-    arm: db.arm || 'Unassigned',
-    house: db.house || 'Unassigned',
+    arm: isPending ? 'Unassigned' : (db.arm || 'Unassigned'),
+    house: isPending ? 'Unassigned' : (db.house || 'Unassigned'),
     guardianName: db.guardian_name,
     guardianPhone: db.guardian_phone,
     guardianEmail: db.guardian_email || '',
     address: db.address || '',
     bloodGroup: db.blood_group || 'O+',
     status: db.status || 'Active',
-    admissionStatus: db.admission_status || (db.assigned_teacher_id ? 'Enrolled' : 'Ready for Class'),
+    admissionStatus: isPending
+      ? 'Pending Review'
+      : (db.assigned_teacher_id ? 'Enrolled' : 'Ready for Class'),
     assignedTeacherId: db.assigned_teacher_id,
     busRouteId: db.bus_route_id,
     avatarUrl: db.avatar_url,
@@ -366,8 +373,7 @@ export function useSchoolStore() {
           .update({
             assigned_teacher_id: teacherId,
             arm: classArm,
-            class_level: classLevel,
-            admission_status: 'Enrolled'
+            class_level: classLevel
           })
           .eq('id', studentId);
       } catch (e) {
@@ -445,8 +451,7 @@ export function useSchoolStore() {
           .from('students')
           .update({
             house,
-            admission_no: finalAdmissionNo,
-            admission_status: 'Ready for Class'
+            admission_no: finalAdmissionNo
           })
           .eq('id', studentId);
       } catch (e) {
@@ -480,6 +485,25 @@ export function useSchoolStore() {
       house?: HouseColor;
     }
   ) => {
+    try {
+      const res = await fetch('/api/admissions/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(applicant)
+      });
+      const data = await res.json();
+      if (data.student) {
+        const updated = [data.student, ...students.filter((s) => s.id !== data.student.id)];
+        setStudents(updated);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(updated));
+        }
+        return data.student as Student;
+      }
+    } catch (e) {
+      console.warn('API registration call fallback to local:', e);
+    }
+
     const tempNo = `DIS/2026/PEND-${String(Math.floor(1000 + Math.random() * 9000))}`;
     const newStd: Student = {
       ...applicant,
@@ -495,31 +519,6 @@ export function useSchoolStore() {
     setStudents(updated);
     if (typeof window !== 'undefined') {
       localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(updated));
-    }
-
-    const supabase = createClient();
-    if (supabase) {
-      try {
-        await supabase.from('students').insert({
-          admission_no: tempNo,
-          first_name: applicant.firstName,
-          last_name: applicant.lastName,
-          gender: applicant.gender,
-          dob: applicant.dob,
-          class_level: applicant.classLevel,
-          arm: 'Unassigned',
-          house: applicant.house || 'Unassigned',
-          guardian_name: applicant.guardianName,
-          guardian_phone: applicant.guardianPhone,
-          guardian_email: applicant.guardianEmail,
-          address: applicant.address,
-          blood_group: applicant.bloodGroup,
-          status: 'Active',
-          admission_status: 'Pending Review'
-        });
-      } catch (e) {
-        console.warn('Supabase selfRegisterStudent warning:', e);
-      }
     }
 
     return newStd;
