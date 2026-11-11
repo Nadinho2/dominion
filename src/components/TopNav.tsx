@@ -17,8 +17,9 @@ export default function TopNav({ onToggleMenu }: TopNavProps) {
   // Strictly sync role from Clerk authenticated user metadata
   useEffect(() => {
     if (isLoaded && user) {
+      const isSuperAdminEmail = user.primaryEmailAddress?.emailAddress === 'nnamdiamuchie@gmail.com';
       const clerkRole = (user.publicMetadata?.role as UserRole) || 
-        (user.organizationMemberships?.[0]?.role === 'org:admin' ? 'admin' : null);
+        (isSuperAdminEmail ? 'admin' : (user.organizationMemberships?.[0]?.role === 'org:admin' ? 'admin' : null));
       if (clerkRole && clerkRole !== role) {
         changeRole(clerkRole);
       }
@@ -26,10 +27,10 @@ export default function TopNav({ onToggleMenu }: TopNavProps) {
   }, [isLoaded, user, role, changeRole]);
 
   const displayName = user
-    ? user.fullName || user.firstName || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'User'
-    : 'Authenticated User';
+    ? user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Nadinho Nnamdi'
+    : 'Nadinho Nnamdi';
 
-  const displayEmail = user?.primaryEmailAddress?.emailAddress || '';
+  const displayEmail = user?.primaryEmailAddress?.emailAddress || 'nnamdiamuchie@gmail.com';
 
   return (
     <header className="top-nav-header no-print">

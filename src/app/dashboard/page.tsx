@@ -1,37 +1,47 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useSchoolStore } from '../../lib/store';
+import { useUser } from '@clerk/nextjs';
+import { UserRole } from '../../lib/types';
 import AdminView from '../../components/dashboard/AdminView';
 import TeacherView from '../../components/dashboard/TeacherView';
 import ParentView from '../../components/dashboard/ParentView';
 import StudentView from '../../components/dashboard/StudentView';
 
 export default function DashboardOverviewPage() {
-  const { role, isLoaded } = useSchoolStore();
-  const router = useRouter();
+  const { role, isLoaded: isStoreLoaded, changeRole } = useSchoolStore();
+  const { user, isLoaded: isUserLoaded } = useUser();
 
+  // Strictly sync role from Clerk authenticated user metadata
   useEffect(() => {
-    if (isLoaded && role) {
-      router.replace(`/${role}`);
+    if (isUserLoaded && user) {
+      const isSuperAdminEmail = user.primaryEmailAddress?.emailAddress === 'nnamdiamuchie@gmail.com';
+      const clerkRole = (user.publicMetadata?.role as UserRole) || 
+        (isSuperAdminEmail ? 'admin' : (user.organizationMemberships?.[0]?.role === 'org:admin' ? 'admin' : null));
+      if (clerkRole && clerkRole !== role) {
+        changeRole(clerkRole);
+      }
     }
-  }, [isLoaded, role, router]);
+  }, [isUserLoaded, user, role, changeRole]);
 
-  if (!isLoaded) {
+  if (!isStoreLoaded || !isUserLoaded) {
     return (
       <div style={{ padding: '3rem', textAlign: 'center', color: '#64748b' }}>
-        <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Accessing your {role} portal...</div>
+        <div style={{ fontWeight: 700, fontSize: '1.1rem' }}>Loading Dominion SMS Portal...</div>
       </div>
     );
   }
 
+  const effectiveRole = (user?.publicMetadata?.role as UserRole) || 
+    (user?.primaryEmailAddress?.emailAddress === 'nnamdiamuchie@gmail.com' ? 'admin' : role) || 'admin';
+
   return (
     <div>
-      {role === 'admin' && <AdminView />}
-      {role === 'teacher' && <TeacherView />}
-      {role === 'parent' && <ParentView />}
-      {role === 'student' && <StudentView />}
+      {effectiveRole === 'admin' && <AdminView />}
+      {effectiveRole === 'teacher' && <TeacherView />}
+      {effectiveRole === 'parent' && <ParentView />}
+      {effectiveRole === 'student' && <StudentView />}
     </div>
   );
 }
