@@ -18,19 +18,34 @@ export default function TopNav({ onToggleMenu }: TopNavProps) {
   useEffect(() => {
     if (isLoaded && user) {
       const isSuperAdminEmail = user.primaryEmailAddress?.emailAddress === 'nnamdiamuchie@gmail.com';
-      const clerkRole = (user.publicMetadata?.role as UserRole) || 
-        (isSuperAdminEmail ? 'admin' : (user.organizationMemberships?.[0]?.role === 'org:admin' ? 'admin' : null));
-      if (clerkRole && clerkRole !== role) {
-        changeRole(clerkRole);
+      const existingRole = user.publicMetadata?.role as UserRole | undefined;
+      const targetRole: UserRole = existingRole || (isSuperAdminEmail ? 'admin' : 'parent');
+
+      // If user has no metadata role stored in Clerk yet, persist 'parent' (or 'admin' for superadmin)
+      if (!existingRole) {
+        fetch('/api/admin/assign-role', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user.id,
+            role: targetRole,
+            name: user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || 'Dominion Guardian',
+            email: user.primaryEmailAddress?.emailAddress
+          })
+        }).catch((err) => console.warn('Failed to auto-init Clerk user role:', err));
+      }
+
+      if (targetRole !== role) {
+        changeRole(targetRole);
       }
     }
   }, [isLoaded, user, role, changeRole]);
 
   const displayName = user
-    ? user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Nadinho Nnamdi'
+    ? user.fullName || [user.firstName, user.lastName].filter(Boolean).join(' ') || user.primaryEmailAddress?.emailAddress?.split('@')[0] || 'Dominion User'
     : 'Nadinho Nnamdi';
 
-  const displayEmail = user?.primaryEmailAddress?.emailAddress || 'nnamdiamuchie@gmail.com';
+  const displayEmail = user ? user.primaryEmailAddress?.emailAddress || '' : 'nnamdiamuchie@gmail.com';
 
   return (
     <header className="top-nav-header no-print">

@@ -31,9 +31,15 @@ const middlewareHandler = hasClerkKey
         return authObj.redirectToSignIn({ returnBackUrl: request.url });
       }
 
-      // 3. Resolve role from Clerk session claims
+      // 3. Resolve role from Clerk session claims (New signups strictly default to 'parent', never 'admin')
       const claims = authObj.sessionClaims as any;
-      const userRole: string = claims?.metadata?.role || claims?.role || 'admin';
+      const isSuperAdminEmail =
+        claims?.email === 'nnamdiamuchie@gmail.com' ||
+        claims?.primaryEmailAddress === 'nnamdiamuchie@gmail.com';
+      const userRole: string =
+        claims?.metadata?.role ||
+        claims?.role ||
+        (isSuperAdminEmail ? 'admin' : 'parent');
 
       // 4. Role-based Route Protection
       if (isAdminRoute(request) && userRole !== 'admin') {

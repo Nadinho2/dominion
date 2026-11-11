@@ -17,10 +17,10 @@ export default function DashboardOverviewPage() {
   useEffect(() => {
     if (isUserLoaded && user) {
       const isSuperAdminEmail = user.primaryEmailAddress?.emailAddress === 'nnamdiamuchie@gmail.com';
-      const clerkRole = (user.publicMetadata?.role as UserRole) || 
-        (isSuperAdminEmail ? 'admin' : (user.organizationMemberships?.[0]?.role === 'org:admin' ? 'admin' : null));
-      if (clerkRole && clerkRole !== role) {
-        changeRole(clerkRole);
+      const existingRole = user.publicMetadata?.role as UserRole | undefined;
+      const targetRole: UserRole = existingRole || (isSuperAdminEmail ? 'admin' : 'parent');
+      if (targetRole !== role) {
+        changeRole(targetRole);
       }
     }
   }, [isUserLoaded, user, role, changeRole]);
@@ -33,8 +33,9 @@ export default function DashboardOverviewPage() {
     );
   }
 
-  const effectiveRole = (user?.publicMetadata?.role as UserRole) || 
-    (user?.primaryEmailAddress?.emailAddress === 'nnamdiamuchie@gmail.com' ? 'admin' : role) || 'admin';
+  const isSuperAdminEmail = user?.primaryEmailAddress?.emailAddress === 'nnamdiamuchie@gmail.com';
+  const effectiveRole: UserRole = (user?.publicMetadata?.role as UserRole) || 
+    (isSuperAdminEmail ? 'admin' : 'parent');
 
   return (
     <div>

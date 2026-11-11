@@ -37,8 +37,8 @@ const STORAGE_KEYS = {
 };
 
 export function getStoredRole(): UserRole {
-  if (typeof window === 'undefined') return 'admin';
-  return (localStorage.getItem(STORAGE_KEYS.ROLE) as UserRole) || 'admin';
+  if (typeof window === 'undefined') return 'parent';
+  return (localStorage.getItem(STORAGE_KEYS.ROLE) as UserRole) || 'parent';
 }
 
 export function setStoredRole(role: UserRole) {
@@ -75,7 +75,7 @@ function mapDbStudent(db: any): Student {
 }
 
 export function useSchoolStore() {
-  const [role, setRole] = useState<UserRole>('admin');
+  const [role, setRole] = useState<UserRole>('parent');
   const [students, setStudents] = useState<Student[]>(INITIAL_STUDENTS);
   const [teachers, setTeachers] = useState<Teacher[]>(INITIAL_TEACHERS);
   const [subjects, setSubjects] = useState<Subject[]>(INITIAL_SUBJECTS);
