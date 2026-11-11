@@ -233,7 +233,8 @@ export default function FinancePage() {
           dueDate: '2026-11-30'
         });
 
-        window.open(data.checkoutUrl, '_blank');
+        // Redirect directly without being blocked by popup blockers
+        window.location.href = data.checkoutUrl;
       } else {
         alert(data.error || 'Failed to initialize Bachs.io payment session.');
       }
@@ -271,7 +272,8 @@ export default function FinancePage() {
       const data = await res.json();
       if (data.checkoutUrl) {
         setBachsCheckoutUrl(data.checkoutUrl);
-        window.open(data.checkoutUrl, '_blank');
+        // Redirect directly without being blocked by popup blockers
+        window.location.href = data.checkoutUrl;
       } else {
         alert(data.error || 'Failed to initialize Bachs checkout session.');
       }

@@ -22,6 +22,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const origin = req.headers.get('origin') || req.nextUrl.origin || 'http://localhost:3000';
+    const successUrl = `${origin}/dashboard/finance?payment=success`;
+    const cancelUrl = `${origin}/dashboard/finance?payment=cancelled`;
+
     const result = await createBachsCheckoutSession({
       invoiceId,
       invoiceNo: invoiceNo || `INV-${Date.now()}`,
@@ -30,7 +34,9 @@ export async function POST(req: NextRequest) {
       guardianEmail,
       guardianName: guardianName || 'Parent / Guardian',
       amount: Number(amount),
-      currency
+      currency,
+      successUrl,
+      cancelUrl
     });
 
     if (!result.success) {

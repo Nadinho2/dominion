@@ -198,7 +198,8 @@ export default function ParentView() {
           dueDate: '2026-11-30'
         });
 
-        window.open(data.checkoutUrl, '_blank');
+        // Redirect directly to Bachs checkout session without being blocked by popup blockers
+        window.location.href = data.checkoutUrl;
       } else {
         alert(data.error || 'Failed to start Bachs.io checkout session.');
       }
