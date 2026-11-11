@@ -777,39 +777,43 @@ export default function FinancePage() {
                 <tbody>
                   <tr>
                     <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>Tuition &amp; Cambridge Curriculum</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{selectedInvoice.tuitionFee.toLocaleString()}</td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>&#8358;{(selectedInvoice.tuitionFee || (selectedInvoice.totalAmount ? selectedInvoice.totalAmount - (selectedInvoice.developmentLevy || 0) - (selectedInvoice.ictRobotics || 0) - (selectedInvoice.busFee || 0) : 0)).toLocaleString()}</td>
                   </tr>
-                  <tr>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>Development &amp; Campus Facilities</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{selectedInvoice.developmentLevy.toLocaleString()}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>ICT &amp; Robotics Laboratory</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{selectedInvoice.ictRobotics.toLocaleString()}</td>
-                  </tr>
+                  {selectedInvoice.developmentLevy ? (
+                    <tr>
+                      <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>Development &amp; Campus Facilities</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>&#8358;{(selectedInvoice.developmentLevy || 0).toLocaleString()}</td>
+                    </tr>
+                  ) : null}
+                  {selectedInvoice.ictRobotics ? (
+                    <tr>
+                      <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>ICT &amp; Robotics Laboratory</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>&#8358;{(selectedInvoice.ictRobotics || 0).toLocaleString()}</td>
+                    </tr>
+                  ) : null}
                   {selectedInvoice.busFee ? (
                     <tr>
                       <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>Air-Conditioned Bus Service</td>
-                      <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{selectedInvoice.busFee.toLocaleString()}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>&#8358;{(selectedInvoice.busFee || 0).toLocaleString()}</td>
                     </tr>
                   ) : null}
                   {selectedInvoice.lunchFee ? (
                     <tr>
                       <td style={{ padding: '0.5rem', borderBottom: '1px solid #f1f5f9' }}>Daily Hot Lunch Program</td>
-                      <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{selectedInvoice.lunchFee.toLocaleString()}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>&#8358;{(selectedInvoice.lunchFee || 0).toLocaleString()}</td>
                     </tr>
                   ) : null}
                   <tr style={{ fontWeight: 800, borderTop: '2px solid #000' }}>
                     <td style={{ padding: '0.5rem' }}>Total Fee Invoiced</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>&#8358;{selectedInvoice.totalAmount.toLocaleString()}</td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>&#8358;{(selectedInvoice.totalAmount || 0).toLocaleString()}</td>
                   </tr>
                   <tr style={{ fontWeight: 800, color: 'var(--emerald)' }}>
                     <td style={{ padding: '0.5rem' }}>Total Paid to Date</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>&#8358;{selectedInvoice.paidAmount.toLocaleString()}</td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>&#8358;{(selectedInvoice.paidAmount || 0).toLocaleString()}</td>
                   </tr>
-                  <tr style={{ fontWeight: 800, color: selectedInvoice.balance > 0 ? 'var(--ruby)' : 'inherit' }}>
+                  <tr style={{ fontWeight: 800, color: (selectedInvoice.balance || 0) > 0 ? 'var(--ruby)' : 'inherit' }}>
                     <td style={{ padding: '0.5rem' }}>Balance Remaining</td>
-                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>&#8358;{selectedInvoice.balance.toLocaleString()}</td>
+                    <td style={{ padding: '0.5rem', textAlign: 'right' }}>&#8358;{(selectedInvoice.balance || 0).toLocaleString()}</td>
                   </tr>
                 </tbody>
               </table>

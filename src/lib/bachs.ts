@@ -189,3 +189,4 @@ export function getOfflinePaymentInstructions() {
       'Use Student Admission No as payment narration / reference'
   };
 }
+
