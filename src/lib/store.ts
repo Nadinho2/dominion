@@ -644,6 +644,21 @@ export function useSchoolStore() {
     }
   };
 
+  const upsertFeeInvoice = async (invoice: FeeInvoice) => {
+    const existingIndex = fees.findIndex((f) => f.id === invoice.id || (f.studentId === invoice.studentId && f.term === invoice.term));
+    let updated: FeeInvoice[];
+    if (existingIndex >= 0) {
+      updated = fees.map((f, i) => (i === existingIndex ? { ...f, ...invoice } : f));
+    } else {
+      updated = [invoice, ...fees];
+    }
+    setFees(updated);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEYS.FEES, JSON.stringify(updated));
+    }
+    return invoice;
+  };
+
   const deleteFeeInvoice = async (id: string) => {
     const updated = fees.filter((f) => f.id !== id);
     setFees(updated);
@@ -683,6 +698,7 @@ export function useSchoolStore() {
     deleteSubject,
     addFeeInvoice,
     updateFeeInvoice,
+    upsertFeeInvoice,
     deleteFeeInvoice
   };
 }
