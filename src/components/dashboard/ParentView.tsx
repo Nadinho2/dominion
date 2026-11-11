@@ -444,17 +444,14 @@ export default function ParentView() {
 
         {/* Multi-Child / Ward Switcher Tabs Bar */}
         <div
+          className="ward-switcher-container"
           style={{
             marginTop: '1.75rem',
             paddingTop: '1.25rem',
-            borderTop: '1px solid rgba(255, 255, 255, 0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            flexWrap: 'wrap'
+            borderTop: '1px solid rgba(255, 255, 255, 0.15)'
           }}
         >
-          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--gold-light)', marginRight: '0.25rem' }}>
+          <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--gold-light)', marginRight: '0.25rem', flexShrink: 0 }}>
             Your Enrolled Wards:
           </span>
 
@@ -478,6 +475,7 @@ export default function ParentView() {
                   fontWeight: isSelected ? 800 : 600,
                   fontSize: '0.85rem',
                   cursor: 'pointer',
+                  flexShrink: 0,
                   transition: 'all 0.2s ease'
                 }}
               >
@@ -530,7 +528,8 @@ export default function ParentView() {
               color: 'var(--gold-light)',
               fontSize: '0.8rem',
               fontWeight: 700,
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0
             }}
           >
             <Plus size={14} /> Add Sibling
@@ -768,7 +767,7 @@ export default function ParentView() {
             </div>
 
             {/* Fee Items Table */}
-            <div style={{ overflowX: 'auto', border: '1px solid #e2e8f0', borderRadius: 'var(--radius-sm)' }}>
+            <div className="table-responsive-wrapper">
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#475569' }}>
@@ -905,7 +904,7 @@ export default function ParentView() {
                 No grades recorded for this term yet. Scores will appear immediately as subject teachers finalize their assessments.
               </div>
             ) : (
-              <div style={{ overflowX: 'auto' }}>
+              <div className="table-responsive-wrapper">
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
@@ -1065,7 +1064,7 @@ export default function ParentView() {
               </div>
 
               {/* Child Names */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="grid-2-col-responsive">
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>
                     Child&apos;s First Name *
@@ -1095,7 +1094,7 @@ export default function ParentView() {
               </div>
 
               {/* Gender & DOB */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="grid-2-col-responsive">
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>
                     Gender *
@@ -1124,7 +1123,7 @@ export default function ParentView() {
               </div>
 
               {/* Class Applying For */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="grid-2-col-responsive">
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>
                     Class Level Applying For *

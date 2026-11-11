@@ -560,7 +560,7 @@ export default function PublicHomePage() {
                 </div>
               </div>
 
-              <Link href="/dashboard/finance" className="btn btn-primary">
+              <Link href="/dashboard/finance" className="btn btn-primary btn-mobile-full">
                 View Fee Ledgers &rarr;
               </Link>
             </div>

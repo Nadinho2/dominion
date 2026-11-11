@@ -92,11 +92,13 @@ export default function AdmissionsPage() {
         style={{
           backgroundColor: 'var(--primary-navy)',
           color: '#ffffff',
-          padding: '1.25rem 2rem',
+          padding: '1rem clamp(1rem, 3vw, 2rem)',
           borderBottom: '3px solid var(--gold-primary)',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

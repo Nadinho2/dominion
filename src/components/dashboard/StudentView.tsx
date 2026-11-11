@@ -121,9 +121,9 @@ export default function StudentView() {
       </div>
 
       {/* Today's Schedule & Digital Student ID Card */}
-      <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+      <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
         {/* Today's Schedule */}
-        <div className="card" style={{ gridColumn: 'span 2' }}>
+        <div className="card student-schedule-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Clock size={20} color="var(--primary-navy)" />

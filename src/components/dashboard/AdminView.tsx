@@ -613,69 +613,69 @@ export default function AdminView() {
               These students have been assigned Houses and Admission Numbers. They are currently visible in the Form Tutor Claim Pool for teachers to pick into their class arms.
             </p>
 
-          {readyForClassStudents.length === 0 ? (
-            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
-              No students currently waiting in the claim pool. Approved applicants will appear here for teachers to claim.
-            </div>
-          ) : (
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
-                    <th style={{ padding: '0.75rem' }}>Admission No</th>
-                    <th style={{ padding: '0.75rem' }}>Student Name</th>
-                    <th style={{ padding: '0.75rem' }}>Class Level</th>
-                    <th style={{ padding: '0.75rem' }}>Assigned House</th>
-                    <th style={{ padding: '0.75rem' }}>Guardian Contact</th>
-                    <th style={{ padding: '0.75rem' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {readyForClassStudents.map((std) => (
-                    <tr key={std.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--primary-navy)' }}>{std.admissionNo}</td>
-                      <td style={{ padding: '0.75rem', fontWeight: 600 }}>{std.firstName} {std.lastName}</td>
-                      <td style={{ padding: '0.75rem' }}>{std.classLevel}</td>
-                      <td style={{ padding: '0.75rem' }}>
-                        <span
-                          style={{
-                            padding: '0.2rem 0.6rem',
-                            borderRadius: '9999px',
-                            fontSize: '0.75rem',
-                            fontWeight: 700,
-                            backgroundColor:
-                              std.house === 'Emerald'
-                                ? '#ecfdf5'
-                                : std.house === 'Sapphire'
-                                ? '#eff6ff'
-                                : std.house === 'Ruby'
-                                ? '#fff1f2'
-                                : '#fefce8',
-                            color:
-                              std.house === 'Emerald'
-                                ? '#065f46'
-                                : std.house === 'Sapphire'
-                                ? '#1e40af'
-                                : std.house === 'Ruby'
-                                ? '#9f1239'
-                                : '#854d0e'
-                          }}
-                        >
-                          {std.house} House
-                        </span>
-                      </td>
-                      <td style={{ padding: '0.75rem', color: '#64748b' }}>{std.guardianPhone}</td>
-                      <td style={{ padding: '0.75rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 700, backgroundColor: '#ecfdf5', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)' }}>
-                          Available in Teacher Pool
-                        </span>
-                      </td>
+            {readyForClassStudents.length === 0 ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
+                No students currently waiting in the claim pool. Approved applicants will appear here for teachers to claim.
+              </div>
+            ) : (
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0', textAlign: 'left', color: '#64748b' }}>
+                      <th style={{ padding: '0.75rem' }}>Admission No</th>
+                      <th style={{ padding: '0.75rem' }}>Student Name</th>
+                      <th style={{ padding: '0.75rem' }}>Class Level</th>
+                      <th style={{ padding: '0.75rem' }}>Assigned House</th>
+                      <th style={{ padding: '0.75rem' }}>Guardian Contact</th>
+                      <th style={{ padding: '0.75rem' }}>Status</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {readyForClassStudents.map((std) => (
+                      <tr key={std.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                        <td style={{ padding: '0.75rem', fontWeight: 700, color: 'var(--primary-navy)' }}>{std.admissionNo}</td>
+                        <td style={{ padding: '0.75rem', fontWeight: 600 }}>{std.firstName} {std.lastName}</td>
+                        <td style={{ padding: '0.75rem' }}>{std.classLevel}</td>
+                        <td style={{ padding: '0.75rem' }}>
+                          <span
+                            style={{
+                              padding: '0.2rem 0.6rem',
+                              borderRadius: '9999px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              backgroundColor:
+                                std.house === 'Emerald'
+                                  ? '#ecfdf5'
+                                  : std.house === 'Sapphire'
+                                    ? '#eff6ff'
+                                    : std.house === 'Ruby'
+                                      ? '#fff1f2'
+                                      : '#fefce8',
+                              color:
+                                std.house === 'Emerald'
+                                  ? '#065f46'
+                                  : std.house === 'Sapphire'
+                                    ? '#1e40af'
+                                    : std.house === 'Ruby'
+                                      ? '#9f1239'
+                                      : '#854d0e'
+                            }}
+                          >
+                            {std.house} House
+                          </span>
+                        </td>
+                        <td style={{ padding: '0.75rem', color: '#64748b' }}>{std.guardianPhone}</td>
+                        <td style={{ padding: '0.75rem' }}>
+                          <span style={{ fontSize: '0.75rem', color: '#059669', fontWeight: 700, backgroundColor: '#ecfdf5', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)' }}>
+                            Available in Teacher Pool
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -1063,160 +1063,160 @@ export default function AdminView() {
               </div>
             </div>
 
-          {teachers.length === 0 ? (
-            <div style={{ padding: '2.5rem', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
-              <Users size={36} color="#64748b" style={{ margin: '0 auto 0.75rem' }} />
-              <div style={{ fontWeight: 700, color: 'var(--primary-navy)' }}>No Teachers Registered Yet</div>
-              <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                Academic staff members registered with the teacher role will appear here for class and subject deployment.
+            {teachers.length === 0 ? (
+              <div style={{ padding: '2.5rem', textAlign: 'center', backgroundColor: '#f8fafc', borderRadius: 'var(--radius-md)' }}>
+                <Users size={36} color="#64748b" style={{ margin: '0 auto 0.75rem' }} />
+                <div style={{ fontWeight: 700, color: 'var(--primary-navy)' }}>No Teachers Registered Yet</div>
+                <div style={{ fontSize: '0.825rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                  Academic staff members registered with the teacher role will appear here for class and subject deployment.
+                </div>
               </div>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              {teachers.map((teacher) => (
-                <div
-                  key={teacher.id}
-                  style={{
-                    padding: '1.25rem',
-                    border: '1px solid #e2e8f0',
-                    borderRadius: 'var(--radius-md)',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '1rem',
-                    backgroundColor: '#ffffff'
-                  }}
-                >
-                  <div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                      <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--primary-navy)' }}>
-                        {teacher.name}
-                      </span>
-                      <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 600 }}>
-                        {teacher.staffNo}
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '0.825rem', color: '#64748b', marginTop: '0.25rem' }}>
-                      {teacher.qualification} &bull; {teacher.email} &bull; {teacher.phone}
-                    </div>
-                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
-                        Form Tutor: {teacher.assignedClass || 'Unassigned'} {teacher.assignedArm || ''}
-                      </span>
-                      {teacher.subjects.map((sub, i) => (
-                        <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155' }}>
-                          {sub}
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {teachers.map((teacher) => (
+                  <div
+                    key={teacher.id}
+                    style={{
+                      padding: '1.25rem',
+                      border: '1px solid #e2e8f0',
+                      borderRadius: 'var(--radius-md)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      flexWrap: 'wrap',
+                      gap: '1rem',
+                      backgroundColor: '#ffffff'
+                    }}
+                  >
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--primary-navy)' }}>
+                          {teacher.name}
                         </span>
-                      ))}
+                        <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', backgroundColor: '#f1f5f9', color: '#475569', fontWeight: 600 }}>
+                          {teacher.staffNo}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.825rem', color: '#64748b', marginTop: '0.25rem' }}>
+                        {teacher.qualification} &bull; {teacher.email} &bull; {teacher.phone}
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '0.2rem 0.6rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#eff6ff', color: '#1d4ed8' }}>
+                          Form Tutor: {teacher.assignedClass || 'Unassigned'} {teacher.assignedArm || ''}
+                        </span>
+                        {teacher.subjects.map((sub, i) => (
+                          <span key={i} style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem', borderRadius: 'var(--radius-sm)', backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#334155' }}>
+                            {sub}
+                          </span>
+                        ))}
+                      </div>
                     </div>
+
+                    <button
+                      onClick={() => {
+                        setEditingTeacherId(teacher.id);
+                        setAssignedClassInput(teacher.assignedClass || 'SSS 2');
+                        setAssignedArmInput(teacher.assignedArm || 'Emerald');
+                        setTeacherSubjectsInput(teacher.subjects.join(', '));
+                      }}
+                      className="btn btn-outline"
+                      style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}
+                    >
+                      <Edit2 size={14} /> Reassign Class &amp; Subjects
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Teacher Reassignment Drawer/Modal */}
+            {editingTeacherId && (
+              <div
+                style={{
+                  marginTop: '1.5rem',
+                  padding: '1.5rem',
+                  border: '2px solid var(--gold-primary)',
+                  borderRadius: 'var(--radius-md)',
+                  backgroundColor: '#f8fafc'
+                }}
+              >
+                <h4 style={{ fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '1rem' }}>
+                  Update Class &amp; Subject Allocation for Teacher
+                </h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                      Assigned Class Level:
+                    </label>
+                    <select
+                      value={assignedClassInput}
+                      onChange={(e) => setAssignedClassInput(e.target.value as ClassLevel)}
+                      style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}
+                    >
+                      <option value="SSS 3">SSS 3</option>
+                      <option value="SSS 2">SSS 2</option>
+                      <option value="SSS 1">SSS 1</option>
+                      <option value="JSS 3">JSS 3</option>
+                      <option value="JSS 2">JSS 2</option>
+                      <option value="JSS 1">JSS 1</option>
+                      <option value="Basic 5">Basic 5</option>
+                      <option value="Basic 4">Basic 4</option>
+                      <option value="Basic 3">Basic 3</option>
+                      <option value="Basic 2">Basic 2</option>
+                      <option value="Basic 1">Basic 1</option>
+                    </select>
                   </div>
 
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                      Assigned Class Arm:
+                    </label>
+                    <select
+                      value={assignedArmInput}
+                      onChange={(e) => setAssignedArmInput(e.target.value as ClassArm)}
+                      style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}
+                    >
+                      <option value="Emerald">Emerald Arm</option>
+                      <option value="Diamond">Diamond Arm</option>
+                      <option value="Gold">Gold Arm</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
+                      Subjects (comma separated):
+                    </label>
+                    <input
+                      type="text"
+                      value={teacherSubjectsInput}
+                      onChange={(e) => setTeacherSubjectsInput(e.target.value)}
+                      style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}
+                      placeholder="Mathematics, Further Mathematics"
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
                   <button
-                    onClick={() => {
-                      setEditingTeacherId(teacher.id);
-                      setAssignedClassInput(teacher.assignedClass || 'SSS 2');
-                      setAssignedArmInput(teacher.assignedArm || 'Emerald');
-                      setTeacherSubjectsInput(teacher.subjects.join(', '));
-                    }}
+                    type="button"
+                    onClick={() => setEditingTeacherId(null)}
                     className="btn btn-outline"
-                    style={{ fontSize: '0.8rem', padding: '0.45rem 0.85rem' }}
+                    style={{ fontSize: '0.8rem' }}
                   >
-                    <Edit2 size={14} /> Reassign Class &amp; Subjects
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleSaveTeacherAllocation}
+                    className="btn btn-primary"
+                    style={{ fontSize: '0.8rem' }}
+                  >
+                    Save Allocation Changes
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {/* Teacher Reassignment Drawer/Modal */}
-          {editingTeacherId && (
-            <div
-              style={{
-                marginTop: '1.5rem',
-                padding: '1.5rem',
-                border: '2px solid var(--gold-primary)',
-                borderRadius: 'var(--radius-md)',
-                backgroundColor: '#f8fafc'
-              }}
-            >
-              <h4 style={{ fontWeight: 800, color: 'var(--primary-navy)', marginBottom: '1rem' }}>
-                Update Class &amp; Subject Allocation for Teacher
-              </h4>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Assigned Class Level:
-                  </label>
-                  <select
-                    value={assignedClassInput}
-                    onChange={(e) => setAssignedClassInput(e.target.value as ClassLevel)}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}
-                  >
-                    <option value="SSS 3">SSS 3</option>
-                    <option value="SSS 2">SSS 2</option>
-                    <option value="SSS 1">SSS 1</option>
-                    <option value="JSS 3">JSS 3</option>
-                    <option value="JSS 2">JSS 2</option>
-                    <option value="JSS 1">JSS 1</option>
-                    <option value="Basic 5">Basic 5</option>
-                    <option value="Basic 4">Basic 4</option>
-                    <option value="Basic 3">Basic 3</option>
-                    <option value="Basic 2">Basic 2</option>
-                    <option value="Basic 1">Basic 1</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Assigned Class Arm:
-                  </label>
-                  <select
-                    value={assignedArmInput}
-                    onChange={(e) => setAssignedArmInput(e.target.value as ClassArm)}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}
-                  >
-                    <option value="Emerald">Emerald Arm</option>
-                    <option value="Diamond">Diamond Arm</option>
-                    <option value="Gold">Gold Arm</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>
-                    Subjects (comma separated):
-                  </label>
-                  <input
-                    type="text"
-                    value={teacherSubjectsInput}
-                    onChange={(e) => setTeacherSubjectsInput(e.target.value)}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid #cbd5e1' }}
-                    placeholder="Mathematics, Further Mathematics"
-                  />
-                </div>
               </div>
-
-              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem', justifyContent: 'flex-end' }}>
-                <button
-                  type="button"
-                  onClick={() => setEditingTeacherId(null)}
-                  className="btn btn-outline"
-                  style={{ fontSize: '0.8rem' }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveTeacherAllocation}
-                  className="btn btn-primary"
-                  style={{ fontSize: '0.8rem' }}
-                >
-                  Save Allocation Changes
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -1241,7 +1241,7 @@ export default function AdminView() {
             </button>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
+          <div className="grid-responsive" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1rem' }}>
             {busRoutes.map((route) => (
               <div
                 key={route.id}

@@ -528,19 +528,15 @@ export default function FinancePage() {
         <>
           {/* Ward Switcher Bar */}
           <div
-            className="card"
+            className="card ward-switcher-container"
             style={{
               padding: '1rem 1.25rem',
               backgroundColor: 'var(--primary-navy)',
               color: '#ffffff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              flexWrap: 'wrap',
               border: '1px solid rgba(212, 154, 55, 0.3)'
             }}
           >
-            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--gold-light)', marginRight: '0.25rem' }}>
+            <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', fontWeight: 700, color: 'var(--gold-light)', marginRight: '0.25rem', flexShrink: 0 }}>
               Select Active Ward:
             </span>
 
@@ -563,7 +559,8 @@ export default function FinancePage() {
                     color: isSelected ? '#ffffff' : '#cbd5e1',
                     fontWeight: isSelected ? 800 : 600,
                     fontSize: '0.825rem',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    flexShrink: 0
                   }}
                 >
                   <span>{w.firstName} {w.lastName}</span>
@@ -597,7 +594,8 @@ export default function FinancePage() {
                 color: 'var(--gold-light)',
                 fontSize: '0.775rem',
                 fontWeight: 700,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                flexShrink: 0
               }}
             >
               <Plus size={13} /> Add Sibling
@@ -798,13 +796,12 @@ export default function FinancePage() {
 
               {/* Direct Offline Transfer Form Card */}
               <div
-                className="card"
+                className="card grid-responsive"
                 style={{
                   backgroundColor: '#f8fafc',
                   border: '1px solid #cbd5e1',
                   padding: '1.5rem',
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
                   gap: '1.5rem'
                 }}
               >
@@ -956,13 +953,12 @@ export default function FinancePage() {
 
           {/* Dual Payment Options Callout */}
           <div
-            className="card"
+            className="card grid-responsive"
             style={{
               backgroundColor: '#f8fafc',
               border: '1px solid #cbd5e1',
               padding: '1.25rem 1.5rem',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
               gap: '1.5rem',
               alignItems: 'center'
             }}
@@ -1037,8 +1033,8 @@ export default function FinancePage() {
           </div>
 
           {/* Tuition Invoice Table */}
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            <table className="table">
+          <div className="card table-responsive-wrapper" style={{ padding: 0 }}>
+            <table className="table" style={{ width: '100%', minWidth: '680px' }}>
               <thead>
                 <tr>
                   <th>Invoice No</th>
@@ -1520,7 +1516,8 @@ export default function FinancePage() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {/* Gender & DOB */}
+              <div className="grid-2-col-responsive">
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>
                     Gender *
@@ -1548,7 +1545,8 @@ export default function FinancePage() {
                 </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {/* Class Applying For */}
+              <div className="grid-2-col-responsive">
                 <div>
                   <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-navy)', marginBottom: '0.25rem' }}>
                     Class Level Applying For *

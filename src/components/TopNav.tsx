@@ -120,14 +120,14 @@ export default function TopNav({ onToggleMenu }: TopNavProps) {
 
         {/* Real Authenticated User Badge & Clerk UserButton */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ textAlign: 'right' }}>
+          <div className="top-nav-user-info">
             <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.2 }}>
               {displayName}
             </div>
             <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.25rem' }}>
               <ShieldCheck size={12} color="var(--gold-dark)" />
               <span style={{ textTransform: 'capitalize', fontWeight: 600 }}>{role}</span>
-              {displayEmail && <span style={{ opacity: 0.7 }}>&bull; {displayEmail}</span>}
+              {displayEmail && <span className="top-nav-email" style={{ opacity: 0.7 }}>&bull; {displayEmail}</span>}
             </div>
           </div>
 
